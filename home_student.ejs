@@ -5,7 +5,7 @@
   <ul>
     <% enrolledCourses.forEach(course => { %>
       <li>
-        <strong><%= course.title %></strong> - <%= course.duration %><br>
+        <a href="/course/<%= course.id %>"><%= course.title %></a> - <%= course.duration %><br>
         <%= course.description %>
       </li>
     <% }) %>
@@ -13,6 +13,7 @@
 <% } else { %>
   <p>You are not enrolled in any courses yet.</p>
 <% } %>
+
 
 <h2>Available Courses</h2>
 <ul>

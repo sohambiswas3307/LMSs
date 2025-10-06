@@ -12,7 +12,9 @@
 <% if(coursesWithStudents.length > 0){ %>
   <% coursesWithStudents.forEach(course => { %>
     <div style="border:1px solid black; padding:10px; margin:10px 0;">
-      <strong><%= course.title %></strong> - <%= course.duration %><br>
+      <a href="/course/<%= course.id %>">
+        <strong><%= course.title %></strong> - <%= course.duration %>
+      </a><br>
       <%= course.description %><br>
 
       <h4>Enrolled Students:</h4>
@@ -30,5 +32,6 @@
 <% } else { %>
   <p>You have not created any courses yet.</p>
 <% } %>
+
 
 <a href="/logout">Logout</a>
