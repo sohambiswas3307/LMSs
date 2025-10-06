@@ -1,0 +1,20 @@
+<h2>Register</h2>
+<p style="color:red"><%= message %></p>
+<form action="/register" method="post">
+  Username: <input type="text" name="username" required><br>
+  Full Name: <input type="text" name="full_name" required><br>
+  Email: <input type="email" name="email" required><br>
+  Phone: <input type="text" name="phone"><br>
+  Age: <input type="number" name="age"><br>
+  
+  <!-- Role dropdown -->
+  Role:
+  <select name="role" required>
+    <option value="Student">Student</option>
+    <option value="Teacher">Teacher</option>
+  </select><br><br>
+
+  Password: <input type="password" name="password" required><br>
+  <button type="submit">Register</button>
+</form>
+<a href="/login">Login</a>

@@ -1,0 +1,10 @@
+<h1>Welcome <%= user ? user.username : 'Guest' %></h1>
+<% if(user){ %>
+  <p>Full Name: <%= user.full_name %></p>
+  <p>Email: <%= user.email %></p>
+  <p>Phone: <%= user.phone %></p>
+  <p>Age: <%= user.age %></p>
+  <a href="/logout">Logout</a>
+<% } else { %>
+  <a href="/login">Login</a> | <a href="/register">Register</a>
+<% } %>

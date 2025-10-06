@@ -1,0 +1,35 @@
+<h1>Welcome, <%= user.full_name %> (Student)</h1>
+
+<h2>Enrolled Courses</h2>
+<% if(enrolledCourses.length > 0){ %>
+  <ul>
+    <% enrolledCourses.forEach(course => { %>
+      <li>
+        <strong><%= course.title %></strong> - <%= course.duration %><br>
+        <%= course.description %>
+      </li>
+    <% }) %>
+  </ul>
+<% } else { %>
+  <p>You are not enrolled in any courses yet.</p>
+<% } %>
+
+<h2>Available Courses</h2>
+<ul>
+  <% courses.forEach(course => { %>
+    <li>
+      <strong><%= course.title %></strong> - <%= course.duration %><br>
+      <%= course.description %><br>
+
+      <form action="/enroll" method="post" style="display:inline;">
+        <input type="hidden" name="course_id" value="<%= course.id %>">
+        <button type="submit" <%= (enrolledCourseIds && enrolledCourseIds.includes(course.id) ? 'disabled' : '') %>>
+          <%= (enrolledCourseIds && enrolledCourseIds.includes(course.id) ? 'Enrolled' : 'Enroll') %>
+        </button>
+      </form>
+    </li>
+    <br>
+  <% }) %>
+</ul>
+
+<a href="/logout">Logout</a>
