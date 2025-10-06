@@ -1,42 +1,28 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    role VARCHAR(20) CHECK (role IN ('student', 'teacher')) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100),
+    phone VARCHAR(20),
+    age INT,
+    role VARCHAR(20) NOT NULL,  -- Student or Teacher
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE courses (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(150) NOT NULL,
-    description TEXT,
+    title VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
     duration VARCHAR(50),
-    teacher_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    materials TEXT[],   -- array of URLs (optional)
+    teacher_id INT REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+SELECT * from courses;
 CREATE TABLE enrollments (
     id SERIAL PRIMARY KEY,
-    course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
-    student_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    student_id INT REFERENCES users(id),
+    course_id INT REFERENCES courses(id),
     enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (course_id, student_id)  -- prevents duplicate enrollment
+    UNIQUE(student_id, course_id)  -- prevents duplicate enrollment in same course
 );
-CREATE TABLE assignments (
-    id SERIAL PRIMARY KEY,
-    course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
-    title VARCHAR(150) NOT NULL,
-    description TEXT,
-    due_date DATE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-CREATE TABLE submissions (
-    id SERIAL PRIMARY KEY,
-    assignment_id INTEGER REFERENCES assignments(id) ON DELETE CASCADE,
-    student_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    file_url TEXT,
-    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    grade NUMERIC(5,2),
-    feedback TEXT
-);
-
+SELECT * from enrollments;
