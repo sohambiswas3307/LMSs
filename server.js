@@ -169,6 +169,29 @@ app.post('/create-course', async (req, res) => {
   }
 });
 
+app.get('/course/:id', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+
+  const user = req.session.user;
+  const courseId = req.params.id;
+
+  try {
+    // Fetch the course details
+    const courseResult = await pool.query("SELECT * FROM courses WHERE id = $1", [courseId]);
+    if (courseResult.rows.length === 0) {
+      return res.send("Course not found");
+    }
+
+    const course = courseResult.rows[0];
+
+    res.render('course_page', { user, course });
+  } catch (err) {
+    console.error(err);
+    res.send("Error loading course");
+  }
+});
+
+
 // Logout
 app.get('/logout', (req, res) => {
   req.session.destroy();
