@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= assignment.title %> - Submissions</title>
+</head>
+<body>
+  <h1>Submissions for: <%= assignment.title %></h1>
+  <p>Max Points: <%= assignment.points %></p>
+
+  <% if(submissions.length === 0){ %>
+    <p>No submissions yet.</p>
+  <% } else { %>
+    <ul>
+      <% submissions.forEach(s => { %>
+        <li>
+          <strong>Student:</strong> <%= s.student_name %> <br>
+
+          <% if(s.file_path){ %>
+            <a href="/uploads/<%= s.file_path %>" target="_blank">Download Submission</a><br>
+          <% } %>
+
+          <form action="/assignments/<%= assignment.id %>/submissions/<%= s.id %>/grade" method="POST">
+            <label>Grade (0 - <%= assignment.points %>):</label>
+            <input type="number" name="grade" min="0" max="<%= assignment.points %>" value="<%= s.grade ?? '' %>" required><br>
+
+            <label>Feedback (optional):</label>
+            <textarea name="feedback"><%= s.feedback ?? '' %></textarea><br>
+
+            <button type="submit">Save Grade</button>
+          </form>
+          <hr>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <br>
+  <a href="/course/<%= courseId %>/assignments">Back to Assignments</a>
+</body>
+</html>

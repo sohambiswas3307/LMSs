@@ -6,13 +6,15 @@
     <% enrolledCourses.forEach(course => { %>
       <li>
         <a href="/course/<%= course.id %>"><%= course.title %></a> - <%= course.duration %><br>
-        <%= course.description %>
+        <%= course.description %><br>
+        <strong>Total Grade:</strong> <%= course.totalGrade %> / <%= course.totalPossible %><br>
       </li>
     <% }) %>
   </ul>
 <% } else { %>
   <p>You are not enrolled in any courses yet.</p>
 <% } %>
+
 
 
 <h2>Available Courses</h2>
