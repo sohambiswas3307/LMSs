@@ -1,22 +1,26 @@
-require('dotenv').config();
+require('dotenv').config(); 
 const express = require('express');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 
+
 const app = express();
-app.set('view engine', 'ejs');
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT
-});
+
+const uploadPath = path.join(process.cwd(), "uploads");
+// Ensure uploads folder exists
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
 
 // Middleware
 app.use(express.urlencoded({ extended: true })); // parses POST data
+app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 console.log('Session secret:', process.env.SESSION_SECRET);
 app.use(session({
   secret: process.env.SESSION_SECRET, // must NOT be undefined
@@ -26,7 +30,29 @@ app.use(session({
 }));
 
 
+
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT
+});
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage });
+app.use('/uploads', express.static(uploadPath));
+
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // Routes
 app.get('/', (req, res) => {
@@ -174,6 +200,8 @@ app.get('/course/:id', async (req, res) => {
 
   const user = req.session.user;
   const courseId = req.params.id;
+  const role = user.role;
+
 
   try {
     // Fetch the course details
@@ -184,12 +212,182 @@ app.get('/course/:id', async (req, res) => {
 
     const course = courseResult.rows[0];
 
-    res.render('course_page', { user, course });
+    res.render('course_page', { user, course,role });
   } catch (err) {
     console.error(err);
     res.send("Error loading course");
   }
 });
+
+//Assignments
+app.get('/course/:id/assignments', async (req, res) => {
+  const { id } = req.params;
+  const user = req.session.user;
+  if (!user) return res.redirect('/login');
+
+  try {
+    // 1️⃣ Fetch the course
+    const courseResult = await pool.query('SELECT * FROM courses WHERE id=$1', [id]);
+    const course = courseResult.rows[0];
+
+    // 2️⃣ Fetch all assignments for this course
+    const assignmentsResult = await pool.query(
+      'SELECT * FROM assignments WHERE course_id=$1 ORDER BY created_at DESC',
+      [id]
+    );
+    const assignments = assignmentsResult.rows;
+
+    // 3️⃣ Attach submissions to each assignment
+    for (let a of assignments) {
+      const submissionsResult = await pool.query(
+        'SELECT * FROM submissions WHERE assignment_id=$1',
+        [a.id]
+      );
+      a.submissions = submissionsResult.rows; // now each assignment has its submissions
+    }
+
+    // 4️⃣ Render page
+    res.render('assignment_page', {
+      course,
+      assignments,
+      role: user.role,
+      userId: user.id,
+      user // needed to check student submissions
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.send('Error loading assignments');
+  }
+});
+
+
+
+
+
+// Teacher creates an assignment
+app.post('/course/:id/assignments/create', upload.single('file'), async (req, res) => {
+  const { id } = req.params;
+  const { title, description, due_date, points } = req.body;
+
+  const marks = parseInt(points);
+  if (isNaN(marks) || marks < 0 || marks > 100) {
+    return res.send('Points must be between 0 and 100');
+  }
+
+  const file_path = req.file ? req.file.filename : null;
+
+  await pool.query(
+    'INSERT INTO assignments (course_id, title, description, due_date, file_path, points) VALUES ($1, $2, $3, $4, $5, $6)',
+    [id, title, description, due_date, file_path, marks]
+  );
+
+  res.redirect(`/course/${id}/assignments`);
+});
+
+
+
+// Submit assignment (student)
+app.post('/assignments/:assignmentId/submit', upload.single('file'), async (req, res) => {
+  const assignmentId = req.params.assignmentId;
+  const studentId = req.session.user.id;
+  const file_path = req.file ? req.file.filename : null;
+
+  try {
+    // Check if student already submitted
+    const existing = await pool.query(
+      'SELECT * FROM submissions WHERE assignment_id=$1 AND student_id=$2',
+      [assignmentId, studentId]
+    );
+
+    if (existing.rows.length > 0) {
+      // Optional: overwrite or prevent duplicate
+      await pool.query(
+        'UPDATE submissions SET file_path=$1, submitted_at=NOW() WHERE assignment_id=$2 AND student_id=$3',
+        [file_path, assignmentId, studentId]
+      );
+    } else {
+      await pool.query(
+        'INSERT INTO submissions (assignment_id, student_id, file_path) VALUES ($1, $2, $3)',
+        [assignmentId, studentId, file_path]
+      );
+    }
+
+    res.redirect(`/course/${req.body.courseId}/assignments`);
+  } catch (err) {
+    console.error(err);
+    res.send('Error submitting assignment');
+  }
+});
+
+// Route for teachers to see all submissions of an assignment
+app.get('/course/:courseId/assignments/:assignmentId/submissions', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'Teacher') return res.redirect('/login');
+
+  const { courseId, assignmentId } = req.params;
+
+  try {
+    // Fetch assignment details
+    const assignmentResult = await pool.query(
+      'SELECT * FROM assignments WHERE id=$1 AND course_id=$2',
+      [assignmentId, courseId]
+    );
+    const assignment = assignmentResult.rows[0];
+
+    // Fetch all submissions with student info
+    const submissionsResult = await pool.query(`
+      SELECT s.*, u.full_name AS student_name, u.email
+      FROM submissions s
+      JOIN users u ON s.student_id = u.id
+      WHERE s.assignment_id=$1
+    `, [assignmentId]);
+
+    res.render('submissions_page', {
+      assignment,
+      submissions: submissionsResult.rows,
+      courseId
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.send('Error fetching submissions');
+  }
+});
+
+
+// Save grade & feedback (teacher submits form)
+app.post('/assignments/:assignmentId/submissions/:submissionId/grade', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'Teacher') return res.redirect('/login');
+
+  const { assignmentId, submissionId } = req.params;
+  const { grade, feedback } = req.body;
+
+  try {
+    // Validate grade range
+    const assignmentResult = await pool.query('SELECT points, course_id FROM assignments WHERE id=$1', [assignmentId]);
+    const maxPoints = assignmentResult.rows[0].points;
+    const gradeInt = parseInt(grade);
+
+    if (isNaN(gradeInt) || gradeInt < 0 || gradeInt > maxPoints) {
+      return res.send(`Grade must be between 0 and ${maxPoints}`);
+    }
+
+    // Update submission
+    await pool.query(
+      'UPDATE submissions SET grade=$1, feedback=$2 WHERE id=$3',
+      [gradeInt, feedback, submissionId]
+    );
+
+    res.redirect(`/course/${assignmentResult.rows[0].course_id}/assignments/${assignmentId}/submissions`);
+  } catch (err) {
+    console.error(err);
+    res.send('Error saving grade');
+  }
+});
+
+
+
+
 
 
 // Logout
