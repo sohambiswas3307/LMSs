@@ -1,38 +1,131 @@
-<h1>Welcome, <%= user.full_name %> (Student)</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enrolled Courses | InnovateEd</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 0;
+      color: #1e293b;
+    }
 
-<h2>Enrolled Courses</h2>
-<% if(enrolledCourses.length > 0){ %>
-  <ul>
-    <% enrolledCourses.forEach(course => { %>
-      <li>
-        <a href="/course/<%= course.id %>"><%= course.title %></a> - <%= course.duration %><br>
-        <%= course.description %><br>
-        <strong>Total Grade:</strong> <%= course.totalGrade %> / <%= course.totalPossible %><br>
-      </li>
-    <% }) %>
-  </ul>
-<% } else { %>
-  <p>You are not enrolled in any courses yet.</p>
-<% } %>
+    header {
+      background-color: white;
+      padding: 20px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
 
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
 
+    header span {
+      color: #0ea5e9;
+      font-weight: 700;
+    }
 
-<h2>Available Courses</h2>
-<ul>
-  <% courses.forEach(course => { %>
-    <li>
-      <strong><%= course.title %></strong> - <%= course.duration %><br>
-      <%= course.description %><br>
+    .container {
+      max-width: 720px;
+      margin: 80px auto;
+      background: #ffffff;
+      padding: 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
 
-      <form action="/enroll" method="post" style="display:inline;">
-        <input type="hidden" name="course_id" value="<%= course.id %>">
-        <button type="submit" <%= (enrolledCourseIds && enrolledCourseIds.includes(course.id) ? 'disabled' : '') %>>
-          <%= (enrolledCourseIds && enrolledCourseIds.includes(course.id) ? 'Enrolled' : 'Enroll') %>
-        </button>
-      </form>
-    </li>
-    <br>
-  <% }) %>
-</ul>
+    h2 {
+      font-size: 2rem;
+      color: #0f172a;
+      margin-bottom: 20px;
+      text-align: center;
+    }
 
-<a href="/logout">Logout</a>
+    p {
+      font-size: 1rem;
+      color: #475569;
+      text-align: center;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background-color: #f1f5f9;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    li:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    li a {
+      color: #0ea5e9;
+      font-weight: 600;
+      font-size: 1.1rem;
+      text-decoration: none;
+    }
+
+    li a:hover {
+      text-decoration: underline;
+    }
+
+    li strong {
+      color: #0f172a;
+    }
+
+    li p {
+      margin: 8px 0;
+      color: #334155;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Welcome to <span>InnovateEd</span></h1>
+    <p>📘 Learn. Grow. Succeed.</p>
+  </header>
+
+  <div class="container">
+    <h2>Enrolled Courses</h2>
+
+    <% if(enrolledCourses.length > 0){ %>
+      <ul>
+        <% enrolledCourses.forEach(course => { %>
+          <li>
+            <a href="/course/<%= course.id %>"><%= course.title %></a> - <%= course.duration %>
+            <p><%= course.description %></p>
+            <p>
+              <strong>Total Grade:</strong> 
+              <% if(course.totalMaxPoints > 0){ %>
+                <%= course.totalGrade %> / <%= course.totalMaxPoints %>
+              <% } else { %>
+                N/A
+              <% } %>
+            </p>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>You are not enrolled in any courses yet.</p>
+    <% } %>
+  </div>
+
+</body>
+</html>

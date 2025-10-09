@@ -1,10 +1,218 @@
-<h1>Welcome <%= user ? user.username : 'Guest' %></h1>
-<% if(user){ %>
-  <p>Full Name: <%= user.full_name %></p>
-  <p>Email: <%= user.email %></p>
-  <p>Phone: <%= user.phone %></p>
-  <p>Age: <%= user.age %></p>
-  <a href="/logout">Logout</a>
-<% } else { %>
-  <a href="/login">Login</a> | <a href="/register">Register</a>
-<% } %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 0;
+      color: #1e293b;
+      text-align: center;
+    }
+
+    header {
+      background-color: white;
+      padding: 20px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    header span {
+      color: #0ea5e9;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 80px auto;
+      padding: 40px;
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .container h2 {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+      color: #0f172a;
+    }
+
+    .container p {
+      color: #475569;
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1rem;
+      text-decoration: none;
+      color: white;
+      transition: 0.3s;
+    }
+
+    .btn-login {
+      background-color: #065f46;
+      margin-right: 15px;
+    }
+
+    .btn-register {
+      background-color: #94a3b8;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .user-card {
+      margin-top: 40px;
+      background-color: #f9fafb;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      display: inline-block;
+      text-align: left;
+    }
+
+    .user-card p {
+      margin: 8px 0;
+      font-size: 1rem;
+    }
+
+    .logout-btn {
+      background-color: #dc2626;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: white;
+      font-weight: 500;
+      display: inline-block;
+      margin-top: 15px;
+    }
+
+    .logout-btn:hover {
+      background-color: #b91c1c;
+    }
+
+    /* --- Extra Sections --- */
+    .sections {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-top: 60px;
+      gap: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      padding: 25px;
+      flex: 1 1 250px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    }
+
+    .card h3 {
+      color: #0f172a;
+      margin-bottom: 15px;
+    }
+
+    .card p {
+      color: #475569;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    li {
+      text-align: left;
+      margin-bottom: 10px;
+      color: #475569;
+    }
+
+    li strong {
+      color: #0ea5e9;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Welcome to <span>InnovateEd</span></h1>
+    <% if (user) { %>
+      <p>👤 <%= user.username %></p>
+    <% } else { %>
+      <p>👤 Guest</p>
+    <% } %>
+  </header>
+
+  <div class="container">
+    <h2>Unlock Your Potential</h2>
+    <p>Your path to mastering new skills, delivered through engaging courses and personalized learning. Transform your future with endless learning possibilities.</p>
+
+    <% if (user) { %>
+      <div class="user-card">
+        <p><strong>Full Name:</strong> <%= user.full_name %></p>
+        <p><strong>Email:</strong> <%= user.email %></p>
+        <p><strong>Phone:</strong> <%= user.phone %></p>
+        <p><strong>Age:</strong> <%= user.age %></p>
+        <a href="/logout" class="logout-btn">Logout</a>
+      </div>
+    <% } else { %>
+      <div>
+        <a href="/login" class="btn btn-login">Login</a>
+        <a href="/register" class="btn btn-register">Register</a>
+      </div>
+    <% } %>
+
+    <!-- Additional Informative Sections -->
+    <div class="sections">
+      <div class="card">
+        <h3>About Us</h3>
+        <p>At InnovateEd, our mission is to empower learners and educators worldwide through a smart, dynamic, and personalized learning environment. We believe in bridging technology and education to unlock every learner’s potential.</p>
+      </div>
+
+      <div class="card">
+        <h3>Key Features</h3>
+        <ul>
+          <li><strong>Bronze Level:</strong> Seamless user registration and secure login system for both Students and Teachers.</li>
+          <li><strong>Silver Level:</strong> Easy course creation for teachers and intuitive course discovery for students.</li>
+          <li><strong>Gold Level:</strong> Interactive assignment submission and management system with real-time progress tracking.</li>
+          <li><strong>Platinum Level:</strong> Comprehensive grading and feedback tools that empower continuous learning improvement.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Success Stories</h3>
+        <p>Join thousands of learners and educators who’ve transformed their skills through InnovateEd. Our platform nurtures talent, inspires growth, and builds future-ready professionals every day.</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,7 +1,110 @@
-<h1>Hi to <%= course.title %> as a <%= user.role %></h1>
-<p>Welcome, <%= user.full_name %></p>
-<a href="/course/<%= course.id %>/assignments?role=<%= role %>&userId=<%= user.id %>">
-  Go to Assignments
-</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= course.title %> | InnovateEd</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 0;
+      color: #1e293b;
+    }
 
-<a href="/home">Back to Home</a>
+    header {
+      background-color: white;
+      padding: 20px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    header span {
+      color: #0ea5e9;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 80px auto;
+      background: #ffffff;
+      padding: 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #0f172a;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1rem;
+      color: #475569;
+      margin-bottom: 25px;
+    }
+
+    a.button-link {
+      display: inline-block;
+      margin: 10px 10px 0 10px;
+      padding: 12px 25px;
+      background-color: #065f46;
+      color: white;
+      font-size: 1rem;
+      font-weight: 500;
+      text-decoration: none;
+      border-radius: 25px;
+      transition: 0.3s;
+    }
+
+    a.button-link:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #0ea5e9;
+      font-weight: 500;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Welcome to <span>InnovateEd</span></h1>
+    <p>📘 Learn. Grow. Succeed.</p>
+  </header>
+
+  <div class="container">
+    <h1>Hi to <%= course.title %> as a <%= user.role %></h1>
+    <p>Welcome, <%= user.full_name %></p>
+
+    <a class="button-link" href="/course/<%= course.id %>/assignments?role=<%= role %>&userId=<%= user.id %>">
+      Go to Assignments
+    </a>
+
+    <br>
+    <a class="back-link" href="/home">Back to Home</a>
+  </div>
+
+</body>
+</html>
