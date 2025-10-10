@@ -118,15 +118,14 @@ app.get('/home', async (req, res) => {
   const user = req.session.user;
 
   if (user.role === 'Teacher') {
+    // Teacher dashboard
     try {
-      // Get all courses created by this teacher
       const coursesResult = await pool.query(
         "SELECT * FROM courses WHERE teacher_id = $1 ORDER BY created_at DESC",
         [user.id]
       );
       const courses = coursesResult.rows;
 
-      // For each course, get enrolled students
       const coursesWithStudents = [];
       for (let course of courses) {
         const enrolledResult = await pool.query(
@@ -147,13 +146,15 @@ app.get('/home', async (req, res) => {
       console.error(err);
       res.send("Error loading teacher dashboard");
     }
+
   } else {
+    // Student dashboard
     try {
-      // Fetch all courses
+      // Fetch all courses (for displaying available courses)
       const coursesResult = await pool.query("SELECT * FROM courses ORDER BY created_at DESC");
       const courses = coursesResult.rows;
 
-      // Fetch enrolled courses for this student
+      // Fetch enrolled courses
       const enrolledResult = await pool.query(
         `SELECT c.id, c.title, c.description, c.duration 
          FROM courses c
@@ -163,10 +164,42 @@ app.get('/home', async (req, res) => {
         [user.id]
       );
 
-      const enrolledCourses = enrolledResult.rows; // full course objects
-
-      // For disabling enroll buttons
+      const enrolledCourses = enrolledResult.rows;
       const enrolledCourseIds = enrolledCourses.map(course => course.id);
+
+      // Calculate total grades per course
+      for (let course of enrolledCourses) {
+        // Fetch assignments with points
+        const assignmentsResult = await pool.query(
+          'SELECT id, points FROM assignments WHERE course_id=$1',
+          [course.id]
+        );
+        const assignments = assignmentsResult.rows;
+
+        // Fetch all submissions of this student for this course
+        const submissionResult = await pool.query(
+          `SELECT a.id AS assignment_id, s.grade 
+           FROM assignments a
+           LEFT JOIN submissions s
+           ON a.id = s.assignment_id AND s.student_id=$1
+           WHERE a.course_id=$2`,
+          [user.id, course.id]
+        );
+
+        let totalGrade = 0;
+        let totalMaxPoints = 0;
+
+        for (let a of assignments) {
+          totalMaxPoints += a.points;
+          const submission = submissionResult.rows.find(sub => sub.assignment_id === a.id);
+          if (submission && submission.grade != null) {
+            totalGrade += submission.grade;
+          }
+        }
+
+        course.totalGrade = totalGrade;
+        course.totalMaxPoints = totalMaxPoints;
+      }
 
       res.render('home_student', { user, courses, enrolledCourseIds, enrolledCourses });
     } catch (err) {
@@ -175,6 +208,8 @@ app.get('/home', async (req, res) => {
     }
   }
 });
+
+
 
 
 app.post('/create-course', async (req, res) => {
