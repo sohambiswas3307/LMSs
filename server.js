@@ -236,29 +236,7 @@ app.post('/create-course', async (req, res) => {
   }
 });
 
-app.get('/course/:id', async (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
 
-  const user = req.session.user;
-  const courseId = req.params.id;
-  const role = user.role;
-
-
-  try {
-    // Fetch the course details
-    const courseResult = await pool.query("SELECT * FROM courses WHERE id = $1", [courseId]);
-    if (courseResult.rows.length === 0) {
-      return res.send("Course not found");
-    }
-
-    const course = courseResult.rows[0];
-
-    res.render('course_page', { user, course,role });
-  } catch (err) {
-    console.error(err);
-    res.send("Error loading course");
-  }
-});
 
 //Assignments
 app.get('/course/:id/assignments', async (req, res) => {
@@ -426,8 +404,163 @@ app.post('/assignments/:assignmentId/submissions/:submissionId/grade', async (re
   }
 });
 
+// GET course forum with threaded replies
+app.get('/course/:id/forum', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+
+  const courseId = req.params.id;
+  const user = req.session.user;
+
+  try {
+    // Fetch all posts, including parent content for "replying to"
+    const forumRes = await pool.query(`
+      SELECT f.*, u.full_name,
+        (SELECT content FROM course_forum WHERE id = f.parent_id) AS reply_to_content
+      FROM course_forum f
+      JOIN users u ON u.id = f.user_id
+      WHERE f.course_id = $1
+      ORDER BY f.created_at ASC
+    `, [courseId]);
+
+    const posts = forumRes.rows;
+
+    // Build threaded structure
+    const map = {};
+    const tree = [];
+
+    posts.forEach(p => {
+      p.replies = [];
+      map[p.id] = p;
+    });
+
+    posts.forEach(p => {
+      if (p.parent_id) {
+        // Only attach if parent exists
+        if (map[p.parent_id]) {
+          map[p.parent_id].replies.push(p);
+        } else {
+          tree.push(p); // fallback if parent missing
+        }
+      } else {
+        tree.push(p);
+      }
+    });
+
+    res.render('course_forum', { user, courseId, posts: tree });
+
+  } catch (err) {
+    console.error(err);
+    res.send("Error loading forum");
+  }
+});
 
 
+// POST a new forum post or reply
+app.post('/course/:id/forum', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+
+  const courseId = req.params.id;
+  const userId = req.session.user.id;
+  const { content, parent_id } = req.body; // optional parent_id
+
+  if (!content || content.trim() === '') return res.send('Cannot post empty content');
+
+  try {
+    await pool.query(
+      'INSERT INTO course_forum (course_id, user_id, content, parent_id) VALUES ($1, $2, $3, $4)',
+      [courseId, userId, content, parent_id || null]
+    );
+    res.redirect(`/course/${courseId}/forum`);
+  } catch (err) {
+    console.error(err);
+    res.send("Error posting to forum");
+  }
+});
+
+
+
+//Materials
+
+// GET course page with materials
+app.get('/course/:id', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+
+  const user = req.session.user;
+  const courseId = req.params.id;
+
+  try {
+    const courseRes = await pool.query("SELECT * FROM courses WHERE id=$1", [courseId]);
+    if (courseRes.rows.length === 0) return res.send("Course not found");
+
+    const course = courseRes.rows[0];
+
+    // Fetch materials
+    const materialsRes = await pool.query(
+      'SELECT * FROM course_materials WHERE course_id=$1 ORDER BY uploaded_at DESC',
+      [courseId]
+    );
+    const materials = materialsRes.rows;
+
+    res.render('course_page', { user, course, materials, role: user.role });
+  } catch (err) {
+    console.error(err);
+    res.send("Error loading course");
+  }
+});
+
+
+
+
+// Teacher uploads course material
+
+app.post('/course/:id/materials/upload', upload.single('material_file'), async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'Teacher') return res.redirect('/login');
+
+  const courseId = req.params.id;
+  const { material_title } = req.body; // We'll use this for file_name
+  const file = req.file;
+
+  if (!material_title || !file) {
+    return res.send('Title and file are required');
+  }
+
+  try {
+    await pool.query(
+      'INSERT INTO course_materials (course_id, file_name, file_path) VALUES ($1, $2, $3)',
+      [courseId, material_title, file.filename]
+    );
+
+    res.redirect(`/course/${courseId}`);
+  } catch (err) {
+    console.error(err);
+    res.send('Error uploading material');
+  }
+});
+
+
+
+// View course materials
+app.get('/course/:id/materials', async (req, res) => {
+  const courseId = req.params.id;
+  const user = req.session.user;
+  if (!user) return res.redirect('/login');
+
+  try {
+    const materialsResult = await pool.query(
+      `SELECT * FROM course_materials WHERE course_id=$1 ORDER BY id DESC`,
+      [courseId]
+    );
+
+    res.render('course_materials', {
+      user,
+      courseId,
+      materials: materialsResult.rows
+    });
+  } catch (err) {
+    console.error(err);
+    res.send('Error fetching course materials');
+  }
+});
 
 
 
