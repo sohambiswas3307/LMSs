@@ -54,6 +54,12 @@ app.use('/uploads', express.static(uploadPath));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+
+
+
+
+
+
 // Routes
 app.get('/', (req, res) => {
   res.render('index', { user: req.session.user });
@@ -474,25 +480,65 @@ app.get('/practice', async (req, res) => {
 // Leaderboard page
 app.get('/practice/leaderboard', async (req, res) => {
   if (!req.session.user) return res.redirect('/login');
+
   try {
-    const coursesRes = await pool.query('SELECT id, title FROM courses ORDER BY title');
-    res.render('leaderboard', { user: req.session.user, courses: coursesRes.rows });
+    const leaderboardRes = await pool.query(`
+      SELECT 
+        u.full_name,
+        sts.exp_total,
+        COUNT(qs.id) AS quizzes_solved,
+        ROUND(
+          CASE 
+            WHEN SUM(q.total_points) > 0 THEN (SUM(qs.score)::decimal / SUM(q.total_points)) * 100
+            ELSE 0
+          END, 2
+        ) AS accuracy_rate
+      FROM student_total_score sts
+      JOIN users u ON u.id = sts.student_id
+      LEFT JOIN quiz_submissions qs ON qs.student_id = u.id AND qs.score IS NOT NULL
+      LEFT JOIN quizzes q ON q.id = qs.quiz_id
+      GROUP BY u.id, sts.exp_total
+      ORDER BY sts.exp_total DESC
+      LIMIT 20
+    `);
+
+    res.render('leaderboard', {
+      user: req.session.user,
+      leaderboard: leaderboardRes.rows
+    });
   } catch (err) {
     console.error(err);
     res.send("Error loading leaderboard page");
   }
 });
 
-// API: global leaderboard
+
+
+
+// API: global leaderboard based on exp_total
 app.get('/api/leaderboard/global', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT u.full_name, sts.total_score
+      SELECT 
+        u.full_name,
+        sts.exp_total,
+        COUNT(qs.id) AS quizzes_solved,
+        ROUND(
+          CASE 
+            WHEN SUM(q.total_points) > 0 THEN (SUM(qs.score)::decimal / SUM(q.total_points)) * 100
+            ELSE 0
+          END, 2
+        ) AS accuracy_rate
       FROM student_total_score sts
       JOIN users u ON u.id = sts.student_id
-      ORDER BY sts.total_score DESC
+      LEFT JOIN quiz_submissions qs ON qs.student_id = u.id
+      LEFT JOIN quizzes q ON q.id = qs.quiz_id
+      WHERE qs.score IS NOT NULL
+      GROUP BY u.id, sts.exp_total
+      ORDER BY sts.exp_total DESC
       LIMIT 20
     `);
+
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -500,90 +546,203 @@ app.get('/api/leaderboard/global', async (req, res) => {
   }
 });
 
-// API: course-based leaderboard
-app.get('/api/leaderboard/course/:courseId', async (req, res) => {
+
+
+
+//
+// Function to update total_score in student_total_score
+async function updateTotalScore(studentId) {
   try {
-    const { courseId } = req.params;
-    const result = await pool.query(`
-      SELECT u.full_name, sqt.total_score
-      FROM student_quiz_totals sqt
-      JOIN users u ON u.id = sqt.student_id
-      WHERE sqt.course_id = $1
-      ORDER BY sqt.total_score DESC
-      LIMIT 20
-    `, [courseId]);
-    res.json(result.rows);
+    // Sum all non-null scores
+    const sumResult = await pool.query(
+      'SELECT COALESCE(SUM(score),0) AS total_score FROM quiz_submissions WHERE student_id=$1',
+      [studentId]
+    );
+    const totalScore = sumResult.rows[0].total_score;
+
+    // Insert or update the total_score
+    await pool.query(
+      `INSERT INTO student_total_score (student_id, total_score)
+       VALUES ($1, $2)
+       ON CONFLICT (student_id)
+       DO UPDATE SET total_score = EXCLUDED.total_score`,
+      [studentId, totalScore]
+    );
+  } catch (err) {
+    console.error('Error updating total_score:', err);
+  }
+}
+
+
+
+// Start quiz: store started_at
+// Record started_at timestamp
+app.post('/practice/quiz/:quizId/start', async (req, res) => {
+  const quizId = req.params.quizId;
+  const studentId = req.session.user.id;
+
+  try {
+    // Check if an entry exists
+    const existing = await pool.query(
+      'SELECT * FROM quiz_submissions WHERE quiz_id = $1 AND student_id = $2',
+      [quizId, studentId]
+    );
+
+    if (existing.rowCount > 0) {
+      // Update started_at for an existing record
+      await pool.query(
+        `UPDATE quiz_submissions 
+         SET started_at = NOW(), submitted_at = NULL, score = NULL, time_taken = NULL
+         WHERE quiz_id = $1 AND student_id = $2`,
+        [quizId, studentId]
+      );
+    } else {
+      // Insert new row
+      await pool.query(
+        `INSERT INTO quiz_submissions (quiz_id, student_id, started_at)
+         VALUES ($1, $2, NOW())`,
+        [quizId, studentId]
+      );
+    }
+
+    res.json({ success: true });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to fetch course leaderboard' });
+    res.status(500).json({ success: false, error: 'Database error' });
   }
 });
 
-// Attempt a quiz
+
+
+// GET /practice/quiz/:quizId – Attempt a quiz
 app.get('/practice/quiz/:quizId', async (req, res) => {
   if (!req.session.user) return res.redirect('/login');
+
   const { quizId } = req.params;
 
   try {
+    // Fetch quiz
     const quizResult = await pool.query('SELECT * FROM quizzes WHERE id=$1', [quizId]);
-    if (quizResult.rows.length === 0) return res.send('Quiz not found!');
+    if (quizResult.rows.length === 0) {
+      return res.send('Quiz not found');
+    }
     const quiz = quizResult.rows[0];
 
-    const questionsResult = await pool.query('SELECT * FROM quiz_questions WHERE quiz_id=$1', [quizId]);
+    // Fetch questions
+    const questionsResult = await pool.query(
+      'SELECT * FROM quiz_questions WHERE quiz_id=$1 ORDER BY id',
+      [quizId]
+    );
     const questions = questionsResult.rows;
 
-    res.render('quiz_attempt', { quiz, questions, user: req.session.user });
+    if (!questions || questions.length === 0) {
+      return res.send('No questions found for this quiz');
+    }
+
+    res.render('quiz_attempt', { user: req.session.user, quiz, questions });
   } catch (err) {
-    console.error(err);
-    res.send('Error fetching quiz');
+    console.error('Error loading quiz:', err);
+    res.send('Error loading quiz');
   }
 });
 
-// Submit a quiz
+
+//SUBMT quiz
 app.post('/practice/quiz/:quizId/submit', async (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
   const { quizId } = req.params;
   const studentId = req.session.user.id;
-  const answers = req.body; // object: { questionId: selectedOption, ... }
+  const answers = req.body;
 
   try {
-    const questionsRes = await pool.query('SELECT * FROM quiz_questions WHERE quiz_id=$1', [quizId]);
+    // 1️⃣ Fetch the quiz first
+    const quizRes = await pool.query('SELECT * FROM quizzes WHERE id=$1', [quizId]);
+    if (quizRes.rows.length === 0) return res.send('Quiz not found');
+    const quiz = quizRes.rows[0];
 
+    // 2️⃣ Fetch questions
+    const questionsRes = await pool.query('SELECT * FROM quiz_questions WHERE quiz_id=$1', [quizId]);
+    const questions = questionsRes.rows;
+
+    // 3️⃣ Calculate per-question points
+    const totalPoints = quiz.total_points;
+    const perQuestionPoints = totalPoints / questions.length;
+
+    // 4️⃣ Calculate score
     let score = 0;
-    const questionsResult = questionsRes.rows.map(q => {
+    const questionsResult = questions.map(q => {
       const isCorrect = answers[q.id] === q.correct_option;
-      if (isCorrect) score++;
+      if (isCorrect) score += perQuestionPoints;
       return {
         id: q.id,
         question_text: q.question_text,
-        selected: answers[q.id],
+        selected: answers[q.id] || null,
         correct_option: q.correct_option,
         isCorrect
       };
     });
 
-    // Insert or update submission
+    // 5️⃣ Calculate time taken
+    const submissionRes = await pool.query(
+      'SELECT started_at FROM quiz_submissions WHERE quiz_id=$1 AND student_id=$2',
+      [quizId, studentId]
+    );
+    const startedAt = submissionRes.rows[0]?.started_at;
+    const submittedAt = new Date();
+    const timeTaken = startedAt ? Math.floor((submittedAt - startedAt) / 1000) : 0;
+
+    // 6️⃣ Calculate EXP
+    const expGained = Math.round(score * 2 + Math.max(0, 60 - timeTaken / 10)); // example formula
+
+    // 7️⃣ Update quiz_submissions
     await pool.query(
-      `INSERT INTO quiz_submissions (quiz_id, student_id, score) 
-       VALUES ($1,$2,$3)
-       ON CONFLICT (quiz_id, student_id) 
-       DO UPDATE SET score = EXCLUDED.score, submitted_at = NOW()`,
-      [quizId, studentId, score]
+      `INSERT INTO quiz_submissions (quiz_id, student_id, score, submitted_at, time_taken)
+       VALUES ($1,$2,$3,NOW(),$4)
+       ON CONFLICT (quiz_id, student_id)
+       DO UPDATE SET 
+         score = EXCLUDED.score,
+         submitted_at = NOW(),
+         time_taken = EXCLUDED.time_taken`,
+      [quizId, studentId, score, timeTaken]
     );
 
-    // Render result page (show correct/incorrect)
+    // 8️⃣ Update student_total_score (add score & exp)
+    await pool.query(
+      `INSERT INTO student_total_score (student_id, total_score, exp_total)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (student_id)
+       DO UPDATE SET 
+         total_score = (
+           SELECT COALESCE(SUM(score),0) 
+           FROM quiz_submissions 
+           WHERE student_id=$1
+         ),
+         exp_total = student_total_score.exp_total + $3`,
+      [studentId, score, expGained]
+    );
+
+    // 9️⃣ Render result
     res.render('quiz_result', {
       user: req.session.user,
       quizId,
       score,
-      total: questionsRes.rows.length,
-      questions: questionsResult
+      total: totalPoints,
+      questions: questionsResult,
+      timeTaken,
+      expGained
     });
+
   } catch (err) {
     console.error(err);
     res.send('Error submitting quiz');
   }
 });
+
+
+
+
+
+
+
 
 // List quizzes for a course (must be after /quiz/:quizId)
 app.get('/practice/:courseId', async (req, res) => {
