@@ -450,6 +450,163 @@ app.post('/enroll', async (req, res) => {
 });
 
 
+//GAMIFICATION
+
+// ============================
+// PRACTICE & LEADERBOARDS
+// ============================
+// ============================
+// PRACTICE & LEADERBOARDS
+// ============================
+
+// GET /practice – Student chooses course to practice
+app.get('/practice', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  try {
+    const coursesRes = await pool.query('SELECT id, title FROM courses ORDER BY title');
+    res.render('practice_home', { courses: coursesRes.rows, user: req.session.user });
+  } catch (err) {
+    console.error(err);
+    res.send('Error fetching courses');
+  }
+});
+
+// Leaderboard page
+app.get('/practice/leaderboard', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  try {
+    const coursesRes = await pool.query('SELECT id, title FROM courses ORDER BY title');
+    res.render('leaderboard', { user: req.session.user, courses: coursesRes.rows });
+  } catch (err) {
+    console.error(err);
+    res.send("Error loading leaderboard page");
+  }
+});
+
+// API: global leaderboard
+app.get('/api/leaderboard/global', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT u.full_name, sts.total_score
+      FROM student_total_score sts
+      JOIN users u ON u.id = sts.student_id
+      ORDER BY sts.total_score DESC
+      LIMIT 20
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch global leaderboard' });
+  }
+});
+
+// API: course-based leaderboard
+app.get('/api/leaderboard/course/:courseId', async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const result = await pool.query(`
+      SELECT u.full_name, sqt.total_score
+      FROM student_quiz_totals sqt
+      JOIN users u ON u.id = sqt.student_id
+      WHERE sqt.course_id = $1
+      ORDER BY sqt.total_score DESC
+      LIMIT 20
+    `, [courseId]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch course leaderboard' });
+  }
+});
+
+// Attempt a quiz
+app.get('/practice/quiz/:quizId', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  const { quizId } = req.params;
+
+  try {
+    const quizResult = await pool.query('SELECT * FROM quizzes WHERE id=$1', [quizId]);
+    if (quizResult.rows.length === 0) return res.send('Quiz not found!');
+    const quiz = quizResult.rows[0];
+
+    const questionsResult = await pool.query('SELECT * FROM quiz_questions WHERE quiz_id=$1', [quizId]);
+    const questions = questionsResult.rows;
+
+    res.render('quiz_attempt', { quiz, questions, user: req.session.user });
+  } catch (err) {
+    console.error(err);
+    res.send('Error fetching quiz');
+  }
+});
+
+// Submit a quiz
+app.post('/practice/quiz/:quizId/submit', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  const { quizId } = req.params;
+  const studentId = req.session.user.id;
+  const answers = req.body; // object: { questionId: selectedOption, ... }
+
+  try {
+    const questionsRes = await pool.query('SELECT * FROM quiz_questions WHERE quiz_id=$1', [quizId]);
+
+    let score = 0;
+    const questionsResult = questionsRes.rows.map(q => {
+      const isCorrect = answers[q.id] === q.correct_option;
+      if (isCorrect) score++;
+      return {
+        id: q.id,
+        question_text: q.question_text,
+        selected: answers[q.id],
+        correct_option: q.correct_option,
+        isCorrect
+      };
+    });
+
+    // Insert or update submission
+    await pool.query(
+      `INSERT INTO quiz_submissions (quiz_id, student_id, score) 
+       VALUES ($1,$2,$3)
+       ON CONFLICT (quiz_id, student_id) 
+       DO UPDATE SET score = EXCLUDED.score, submitted_at = NOW()`,
+      [quizId, studentId, score]
+    );
+
+    // Render result page (show correct/incorrect)
+    res.render('quiz_result', {
+      user: req.session.user,
+      quizId,
+      score,
+      total: questionsRes.rows.length,
+      questions: questionsResult
+    });
+  } catch (err) {
+    console.error(err);
+    res.send('Error submitting quiz');
+  }
+});
+
+// List quizzes for a course (must be after /quiz/:quizId)
+app.get('/practice/:courseId', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  const { courseId } = req.params;
+
+  try {
+    const quizzesRes = await pool.query(
+      'SELECT id, title, total_points FROM quizzes WHERE course_id=$1 ORDER BY id',
+      [courseId]
+    );
+    res.render('practice_course', { quizzes: quizzesRes.rows, courseId, user: req.session.user });
+  } catch (err) {
+    console.error(err);
+    res.send('Error fetching quizzes');
+  }
+});
+
+
+
+
+
 app.listen(5000, () => {
   console.log('Server running on port 5000');
 });
+
