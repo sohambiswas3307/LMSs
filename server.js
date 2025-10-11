@@ -465,6 +465,75 @@ app.post('/enroll', async (req, res) => {
 // PRACTICE & LEADERBOARDS
 // ============================
 
+
+//Create course
+
+
+// server.js
+
+app.get('/course/:id/quiz/create', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'Teacher') return res.redirect('/login');
+
+  const courseId = req.params.id;
+
+  try {
+    const courseRes = await pool.query('SELECT * FROM courses WHERE id=$1', [courseId]);
+    const course = courseRes.rows[0];
+    if (!course) return res.status(404).send('Course not found');
+
+    res.render('create_quiz', { course, user: req.session.user, message: '' });
+  } catch (err) {
+    console.error(err);
+    res.send('Error loading create quiz page');
+  }
+});
+
+app.post('/course/:id/quiz/create', async (req,res) => {
+  if (!req.session.user || req.session.user.role !== 'Teacher') return res.redirect('/login');
+
+  const courseId = req.params.id;
+  const { title, total_points, questions } = req.body;
+
+  if (!title || !total_points || !questions || !questions.length) {
+    return res.send('All fields required, at least 1 question.');
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const quizRes = await client.query(
+      'INSERT INTO quizzes (course_id,title,total_points) VALUES ($1,$2,$3) RETURNING id',
+      [courseId, title, total_points]
+    );
+    const quizId = quizRes.rows[0].id;
+
+    for (let q of questions) {
+      const { question_text, options, correct_option } = q;
+      if (!question_text || !options || options.length !==4 || !correct_option) continue;
+
+      await client.query(
+        `INSERT INTO quiz_questions 
+          (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option) 
+        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [quizId, question_text, options[0], options[1], options[2], options[3], correct_option]
+      );
+    }
+
+    await client.query('COMMIT');
+    res.send('Quiz Created Successfully!');
+  } catch(err) {
+    await client.query('ROLLBACK');
+    console.error(err);
+    res.send('Error creating quiz');
+  } finally {
+    client.release();
+  }
+});
+
+
+
+
 // GET /practice – Student chooses course to practice
 app.get('/practice', async (req, res) => {
   if (!req.session.user) return res.redirect('/login');
