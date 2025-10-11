@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Result | InnovateEd</title>
+<style>
+  body { font-family: 'Poppins', sans-serif; background:#f8fafc; color:#1e293b; margin:0; padding:0; }
+  header { background:white; padding:20px 60px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+  header h1 span { color:#0ea5e9; font-weight:700; }
+  .container { max-width:720px; margin:50px auto; background:white; padding:40px; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.05); }
+  h2 { text-align:center; margin-bottom:20px; }
+  .question { margin-bottom:15px; padding:15px; border-radius:8px; background:#f1f5f9; }
+  .correct { background:#d1fae5; }
+  .wrong { background:#fee2e2; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Welcome to <span>InnovateEd</span></h1>
+</header>
+
+<div class="container">
+  <h2>Quiz Result: <%= score %> / <%= total %></h2>
+
+  <% questions.forEach(q => { %>
+    <div class="question <%= q.isCorrect ? 'correct' : 'wrong' %>">
+      <p><strong>Q:</strong> <%= q.question_text %></p>
+      <p><strong>Your Answer:</strong> <%= q.selected %></p>
+      <p><strong>Correct Answer:</strong> <%= q.correct_option %></p>
+    </div>
+  <% }) %>
+
+  <a href="/practice/<%= quizId %>" style="display:inline-block;margin-top:20px;color:#0ea5e9;">Back to Quiz</a>
+</div>
+</body>
+</html>

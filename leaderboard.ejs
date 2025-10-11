@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard | InnovateEd</title>
+  <style>
+    body { font-family:'Poppins', sans-serif; background:#f8fafc; margin:0; color:#1e293b; }
+    header { background:#fff; padding:20px 40px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+    header h1 { font-size:1.6rem; }
+    .container { max-width:800px; margin:60px auto; background:#fff; padding:30px 40px; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.05); }
+    .tabs { display:flex; margin-bottom:20px; gap:10px; }
+    .tab { cursor:pointer; padding:10px 20px; background:#f1f5f9; border-radius:8px; font-weight:600; }
+    .tab.active { background:#0ea5e9; color:#fff; }
+    select { padding:8px 12px; border-radius:6px; margin-left:10px; }
+    table { width:100%; border-collapse:collapse; margin-top:20px; }
+    th, td { padding:10px; border-bottom:1px solid #ddd; text-align:left; }
+    th { background:#f1f5f9; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Leaderboard</h1>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <div class="tab active" id="globalTab">Global</div>
+    <div class="tab" id="courseTab">Course-Based
+      <select id="courseSelect">
+        <option value="">Select Course</option>
+        <% courses.forEach(course => { %>
+          <option value="<%= course.id %>"><%= course.title %></option>
+        <% }) %>
+      </select>
+    </div>
+  </div>
+
+  <table id="leaderboardTable">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Student</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Filled dynamically -->
+    </tbody>
+  </table>
+</div>
+
+<script>
+const globalTab = document.getElementById('globalTab');
+const courseTab = document.getElementById('courseTab');
+const courseSelect = document.getElementById('courseSelect');
+const tableBody = document.querySelector('#leaderboardTable tbody');
+
+async function loadGlobal() {
+  const res = await fetch('/api/leaderboard/global');
+  const data = await res.json();
+  renderLeaderboard(data);
+}
+
+async function loadCourse(courseId) {
+  if(!courseId) { tableBody.innerHTML = ''; return; }
+  const res = await fetch('/api/leaderboard/course/' + courseId);
+  const data = await res.json();
+  renderLeaderboard(data);
+}
+
+function renderLeaderboard(data) {
+  tableBody.innerHTML = '';
+  data.forEach((row, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${idx+1}</td><td>${row.full_name}</td><td>${row.total_score}</td>`;
+    tableBody.appendChild(tr);
+  });
+}
+
+// Tab clicks
+globalTab.addEventListener('click', () => {
+  globalTab.classList.add('active');
+  courseTab.classList.remove('active');
+  loadGlobal();
+});
+
+courseTab.addEventListener('click', () => {
+  globalTab.classList.remove('active');
+  courseTab.classList.add('active');
+});
+
+// Course select
+courseSelect.addEventListener('change', () => {
+  const courseId = courseSelect.value;
+  loadCourse(courseId);
+});
+
+// Load global leaderboard by default
+loadGlobal();
+</script>
+
+</body>
+</html>
