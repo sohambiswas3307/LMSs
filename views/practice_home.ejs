@@ -1,0 +1,19 @@
+<header>
+  <h1>Welcome to <span>InnovateEd</span></h1>
+  <button class="leaderboard-btn" onclick="location.href='/practice/leaderboard'">Leaderboard</button>
+</header>
+
+<div class="container">
+  <h1>Choose a Course to Practice</h1>
+  <% if(courses.length > 0){ %>
+  <ul>
+    <% courses.forEach(course => { %>
+      <li>
+        <a href="/practice/<%= course.id %>"><%= course.title %></a>
+      </li>
+    <% }) %>
+  </ul>
+  <% } else { %>
+  <p>No courses available.</p>
+  <% } %>
+</div>

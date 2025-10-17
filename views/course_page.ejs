@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= course.title %> | InnovateEd</title>
+  <style>
+    body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; margin:0; padding:0; color:#1e293b; }
+    header { background-color: white; padding: 20px 60px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+    header h1 { font-size:1.6rem; font-weight:600; color:#0f172a; }
+    header span { color:#0ea5e9; font-weight:700; }
+    .container { max-width:800px; margin:80px auto; background:#fff; padding:40px 50px; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.05); }
+    h1 { font-size:1.8rem; color:#0f172a; margin-bottom:10px; text-align:center; }
+    p { font-size:1rem; color:#475569; margin-bottom:25px; text-align:center; }
+    a.button-link { display:inline-block; margin:10px 10px 0 10px; padding:12px 25px; background-color:#065f46; color:white; font-size:1rem; font-weight:500; text-decoration:none; border-radius:25px; transition:0.3s; }
+    a.button-link:hover { opacity:0.9; transform:translateY(-2px); }
+    .back-link { display:inline-block; margin-top:20px; color:#0ea5e9; font-weight:500; text-decoration:none; font-size:0.95rem; }
+    .back-link:hover { text-decoration:underline; }
+    .materials { margin-top:30px; }
+    .materials ul { list-style:none; padding-left:0; }
+    .materials li { padding:8px 0; font-size:0.95rem; }
+    form.upload-form { margin-top:30px; border:1px solid #cbd5e1; padding:20px; border-radius:12px; background-color:#f1f5f9; }
+    form.upload-form input[type="text"], form.upload-form input[type="file"] { width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #cbd5e1; }
+    form.upload-form button { padding:10px 0; background-color:#065f46; color:white; font-size:1rem; border:none; border-radius:25px; cursor:pointer; transition:0.3s; }
+    form.upload-form button:hover { opacity:0.9; transform:translateY(-2px); }
+    .role-teacher { margin-top:40px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Welcome to <span>InnovateEd</span></h1>
+    <p>📘 Learn. Grow. Succeed.</p>
+  </header>
+  
+  <a href="/course/<%= course.id %>/forum">
+    <button>Go to Course Discussion Forum</button>
+  </a>
+
+  <a href="/ask-ai" class="btn btn-primary">Ask AI 🤖</a>
+
+
+
+
+
+
+
+  <div class="container">
+    <h1><%= course.title %></h1>
+    <p>Hi <%= user.full_name %> (<%= user.role %>)</p>
+
+    <a class="button-link" href="/course/<%= course.id %>/assignments?role=<%= role %>&userId=<%= user.id %>">
+      Go to Assignments
+    </a>
+
+    <div class="materials">
+      <h2>Course Materials</h2>
+      <% if (materials && materials.length > 0) { %>
+        <ul>
+          <% materials.forEach(mat => { %>
+            <li>
+              <a href="/uploads/<%= mat.file_path %>" target="_blank"><%= mat.file_name %></a>
+            </li>
+          <% }) %>
+        </ul>
+      <% } else { %>
+        <p>No materials uploaded yet.</p>
+      <% } %>
+    </div>
+
+    <% if (user.role === 'Teacher') { %>
+      <div class="role-teacher">
+        <h2>Upload New Material</h2>
+        <form class="upload-form" action="/course/<%= course.id %>/materials/upload" method="POST" enctype="multipart/form-data">
+          <input type="text" name="material_title" placeholder="Material Title" required>
+          <input type="file" name="material_file" accept=".pdf,.ppt,.pptx,.doc,.docx" required>
+          <button type="submit">Upload</button>
+        </form>
+      </div>
+    <% } %>
+
+    <a class="back-link" href="/home">Back to Home</a>
+  </div>
+
+</body>
+</html>

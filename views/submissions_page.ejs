@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= assignment.title %> - Submissions</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 0;
+      color: #1e293b;
+    }
+
+    header {
+      background-color: white;
+      padding: 20px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    header span {
+      color: #0ea5e9;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 60px auto;
+      background: #ffffff;
+      padding: 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #0f172a;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    p {
+      font-size: 0.95rem;
+      color: #475569;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 20px;
+    }
+
+    .submission-card {
+      background-color: #f1f5f9;
+      border-radius: 12px;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+      font-size: 0.9rem;
+    }
+
+    .submission-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .submission-header strong {
+      font-size: 1rem;
+      color: #0f172a;
+    }
+
+    .submission-header button {
+      background-color: #0ea5e9;
+      color: white;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: 0.3s;
+    }
+
+    .submission-header button:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .submission-details {
+      display: none;
+      margin-top: 12px;
+      border-top: 1px solid #cbd5e1;
+      padding-top: 12px;
+    }
+
+    .submission-details a {
+      color: #0ea5e9;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .submission-details a:hover {
+      text-decoration: underline;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    input[type="number"],
+    textarea {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.95rem;
+      width: 100%;
+      transition: border-color 0.3s;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
+    }
+
+    button.submit-btn {
+      padding: 10px 0;
+      background-color: #065f46;
+      color: white;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      width: fit-content;
+      transition: 0.3s;
+    }
+
+    button.submit-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 25px;
+      color: #0ea5e9;
+      font-weight: 500;
+      text-decoration: none;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        padding: 25px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Welcome to <span>InnovateEd</span></h1>
+    <p>📘 Learn. Grow. Succeed.</p>
+  </header>
+
+  <div class="container">
+    <h1>Submissions for: <%= assignment.title %></h1>
+    <p>Max Points: <%= assignment.points %></p>
+
+    <% if(submissions.length === 0){ %>
+      <p>No submissions yet.</p>
+    <% } else { %>
+      <ul>
+        <% submissions.forEach(s => { %>
+          <li class="submission-card">
+            <div class="submission-header" onclick="toggleDetails(this)">
+              <strong>Student: <%= s.student_name %></strong>
+              <button>View / Grade</button>
+            </div>
+
+            <div class="submission-details">
+              <% if(s.file_path){ %>
+                <p><a href="/uploads/<%= s.file_path %>" target="_blank">Download Submission</a></p>
+              <% } %>
+
+              <form action="/assignments/<%= assignment.id %>/submissions/<%= s.id %>/grade" method="POST">
+                <label>Grade (0 - <%= assignment.points %>):</label>
+                <input type="number" name="grade" min="0" max="<%= assignment.points %>" value="<%= s.grade ?? '' %>" required>
+
+                <label>Feedback (optional):</label>
+                <textarea name="feedback"><%= s.feedback ?? '' %></textarea>
+
+                <button type="submit" class="submit-btn">Save Grade</button>
+              </form>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+
+    <a class="back-link" href="/course/<%= courseId %>/assignments">Back to Assignments</a>
+  </div>
+
+  <script>
+    function toggleDetails(header) {
+      const details = header.nextElementSibling;
+      details.style.display = details.style.display === 'block' ? 'none' : 'block';
+    }
+  </script>
+
+</body>
+</html>

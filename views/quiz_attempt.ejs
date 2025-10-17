@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= quiz.title %> - Attempt</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .question { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    .blurred { filter: blur(10px); pointer-events: none; user-select: none; }
+    #timer { position: fixed; top: 10px; right: 20px; font-size: 18px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<h1><%= quiz.title %></h1>
+<div id="timer">Time: 0s</div>
+
+<button id="startBtn">Start Quiz</button>
+
+<form id="quizForm" action="/practice/quiz/<%= quiz.id %>/submit" method="post">
+  <% questions.forEach((q, idx) => { %>
+    <div class="question blurred" data-question-id="<%= q.id %>">
+      <p><strong>Q<%= idx+1 %>:</strong> <%= q.question_text %></p>
+      <label>
+        <input type="radio" name="<%= q.id %>" value="A"> A. <%= q.option_a %>
+      </label><br>
+      <label>
+        <input type="radio" name="<%= q.id %>" value="B"> B. <%= q.option_b %>
+      </label><br>
+      <label>
+        <input type="radio" name="<%= q.id %>" value="C"> C. <%= q.option_c %>
+      </label><br>
+      <label>
+        <input type="radio" name="<%= q.id %>" value="D"> D. <%= q.option_d %>
+      </label>
+    </div>
+  <% }) %>
+  <input type="hidden" name="timeTaken" id="timeTaken" value="0">
+  <button type="submit" id="submitBtn" disabled>Submit Quiz</button>
+</form>
+
+<script>
+  let timer = 0;
+  let timerInterval = null;
+  const timerDisplay = document.getElementById('timer');
+  const startBtn = document.getElementById('startBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const questionsDivs = document.querySelectorAll('.question');
+  const timeTakenInput = document.getElementById('timeTaken');
+
+  startBtn.addEventListener('click', async () => {
+    // Start timer
+    timer = 0;
+    timerDisplay.textContent = 'Time: 0s';
+    if(timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timer++;
+      timerDisplay.textContent = `Time: ${timer}s`;
+      timeTakenInput.value = timer;
+    }, 1000);
+
+    // Remove blur
+    questionsDivs.forEach(q => q.classList.remove('blurred'));
+
+    // Enable submit
+    submitBtn.disabled = false;
+
+    // Disable start button
+    startBtn.disabled = true;
+
+    // Notify server of quiz start
+    await fetch(`/practice/quiz/<%= quiz.id %>/start`, { method: 'POST' });
+  });
+
+  // Stop timer on submit
+  document.getElementById('quizForm').addEventListener('submit', () => {
+    clearInterval(timerInterval);
+    timeTakenInput.value = timer;
+  });
+</script>
+
+</body>
+</html>

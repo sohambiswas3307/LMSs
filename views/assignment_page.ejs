@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= course.title %> - Assignments</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 0;
+      color: #1e293b;
+    }
+
+    header {
+      background-color: white;
+      padding: 20px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    header span {
+      color: #0ea5e9;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 60px auto;
+      background: #ffffff;
+      padding: 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #0f172a;
+      margin-bottom: 5px;
+    }
+
+    p {
+      font-size: 0.95rem;
+      color: #475569;
+      margin-bottom: 15px;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      color: #0f172a;
+      margin-bottom: 15px;
+      margin-top: 25px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    input[type="file"],
+    textarea {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.95rem;
+      transition: border-color 0.3s;
+      width: 100%;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
+    }
+
+    button {
+      padding: 10px 0;
+      background-color: #065f46;
+      color: white;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: 0.3s;
+      width: fit-content;
+    }
+
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    li {
+      background-color: #f1f5f9;
+      border-radius: 12px;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+      font-size: 0.9rem;
+      position: relative;
+    }
+
+    li strong {
+      font-size: 1rem;
+      color: #0f172a;
+    }
+
+    li a {
+      color: #0ea5e9;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    li a:hover {
+      text-decoration: underline;
+    }
+
+    .submission-form {
+      margin-top: 10px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #0ea5e9;
+      font-weight: 500;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        padding: 25px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Welcome to <span>InnovateEd</span></h1>
+    <p>📘 Learn. Grow. Succeed.</p>
+  </header>
+
+  <div class="container">
+    <h1><%= course.title %> - Assignments</h1>
+    <p>Welcome, <%= user.full_name %> (<%= role %>)</p>
+
+    <% if (role === 'Teacher') { %>
+      <h2>Create New Assignment</h2>
+      <form action="/course/<%= course.id %>/assignments/create" method="POST" enctype="multipart/form-data">
+        <label>Title:</label>
+        <input type="text" name="title" required>
+
+        <label>Description:</label>
+        <textarea name="description" rows="4" required></textarea>
+
+        <label>Due Date:</label>
+        <input type="date" name="due_date" required>
+
+        <label>Points (0-100):</label>
+        <input type="number" name="points" min="0" max="100" required>
+
+        <label>Upload File (PDF/DOC/DOCX):</label>
+        <input type="file" name="file" accept=".pdf,.doc,.docx">
+
+        <button type="submit">Create Assignment</button>
+      </form>
+    <% } %>
+
+    <h2>All Assignments</h2>
+
+    <% if (assignments.length === 0) { %>
+      <p>No assignments yet.</p>
+    <% } else { %>
+      <ul>
+        <% assignments.forEach(a => { %>
+          <li>
+            <strong><%= a.title %></strong> - Due: <%= a.due_date ? a.due_date.toISOString().slice(0,10) : 'N/A' %>
+            <p><%= a.description %></p>
+            <p>Points: <%= a.points %></p>
+
+            <% if (a.file_path) { %>
+              <a href="/uploads/<%= a.file_path %>" target="_blank">Download Assignment</a><br>
+            <% } %>
+
+            <% if (role === 'Teacher') { %>
+              <a href="/course/<%= course.id %>/assignments/<%= a.id %>/submissions">View Submissions</a>
+            <% } %>
+
+            <% if (role === 'Student') { %>
+              <% const submitted = a.submissions?.find(s => s.student_id === user.id); %>
+              <% if (!submitted) { %>
+                <form class="submission-form" action="/assignments/<%= a.id %>/submit" method="POST" enctype="multipart/form-data">
+                  <input type="hidden" name="courseId" value="<%= course.id %>">
+                  <input type="file" name="file" required>
+                  <button type="submit">Submit Assignment</button>
+                </form>
+              <% } else { %>
+                <!-- Top-right "Your Submission" button -->
+                <a href="/uploads/<%= submitted.file_path %>" target="_blank" 
+                   style="position: absolute; top: 15px; right: 20px; background-color:#0ea5e9; color:white; padding:6px 12px; border-radius:20px; text-decoration:none; font-size:0.85rem;">
+                   Your Submission
+                </a>
+
+                <% if(submitted.grade != null){ %>
+                  <p><strong>Grade:</strong> <%= submitted.grade %> / <%= a.points %></p>
+                  <% if(submitted.feedback){ %>
+                    <p><strong>Feedback:</strong> <%= submitted.feedback %></p>
+                  <% } %>
+                <% } else { %>
+                  <p>Your submission has not been graded yet.</p>
+                <% } %>
+              <% } %>
+            <% } %>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+
+    <a class="back-link" href="/home">Back to Home</a>
+  </div>
+
+</body>
+</html>
