@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
-
+const OpenAI = require("openai");
 
 const app = express();
 
@@ -963,6 +963,39 @@ app.get('/practice/:courseId', async (req, res) => {
   }
 });
 
+
+//AskAI feature
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+// Ask AI route
+// GET Ask AI page
+app.get("/ask-ai", (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+  res.render("ask_ai", { user: req.session.user });
+});
+
+// POST Ask AI question
+app.post("/ask-ai", async (req, res) => {
+  const { question } = req.body;
+  if (!question) return res.status(400).json({ error: "Question required" });
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are an AI tutor helping students with programming and computer science topics." },
+        { role: "user", content: question }
+      ]
+    });
+    res.json({ answer: response.choices[0].message.content });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "AI request failed" });
+  }
+});
 
 
 
