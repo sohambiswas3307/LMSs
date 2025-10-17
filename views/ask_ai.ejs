@@ -2,23 +2,150 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Ask AI</title>
+  <title>Ask AI | InnovateEd</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 30px; background: #f5f7fa; }
-    .chatbox { max-width: 800px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    .message { margin: 10px 0; padding: 10px 15px; border-radius: 10px; }
-    .user { background: #dcf8c6; text-align: right; }
-    .ai { background: #e3e9ff; text-align: left; }
-    .input-area { display: flex; margin-top: 20px; }
-    input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-    button { padding: 10px 20px; border: none; background: #007bff; color: white; border-radius: 5px; cursor: pointer; }
-    button:hover { background: #0056b3; }
+    :root {
+      --accent-blue: #4562d9;
+      --accent-pink: #f07b78;
+      --text-dark: #2a3344;
+      --text-medium: #6c757d;
+      --bg-light: #f7f9fc;
+      --white: #ffffff;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --shadow-soft: 0 8px 20px rgba(0,0,0,0.08);
+      --transition: 0.3s;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-dark);
+      margin: 0;
+      padding: 30px;
+    }
+
+    .chatbox {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 25px 30px;
+      display: flex;
+      flex-direction: column;
+      height: 600px;
+    }
+
+    .chatbox h2 {
+      margin: 0 0 15px 0;
+      font-size: 1.6rem;
+      color: var(--accent-blue);
+      border-bottom: 2px solid #e9eef5;
+      padding-bottom: 10px;
+    }
+
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-right: 5px;
+    }
+
+    .message {
+      max-width: 75%;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      word-wrap: break-word;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    /* User message - right aligned */
+    .message.user {
+      align-self: flex-end;
+      background: var(--accent-blue);
+      color: #fff;
+      border-top-right-radius: 6px;
+      text-align: right;
+    }
+    .message.user strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #ffe082;
+      font-weight: 600;
+    }
+
+    /* AI message - left aligned */
+    .message.ai {
+      align-self: flex-start;
+      background: #e7ecff;
+      color: var(--text-dark);
+      border-top-left-radius: 6px;
+      text-align: left;
+    }
+    .message.ai strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent-blue);
+      font-weight: 600;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 12px;
+      margin-top: 15px;
+      border-top: 1px solid #e9eef5;
+      padding-top: 15px;
+    }
+
+    .input-area input[type="text"] {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid #d9e2ff;
+      outline: none;
+      font-size: 0.95rem;
+    }
+
+    .input-area button {
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      border: none;
+      background: var(--accent-blue);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .input-area button:hover {
+      background: #5d75e6;
+    }
+
+    /* Scrollbar styling */
+    .chat-area::-webkit-scrollbar {
+      width: 6px;
+    }
+    .chat-area::-webkit-scrollbar-thumb {
+      background-color: rgba(69, 98, 217, 0.4);
+      border-radius: 3px;
+    }
+
+    @media (max-width: 900px) {
+      .chatbox { height: 500px; padding: 20px; }
+      .message { max-width: 90%; }
+    }
   </style>
 </head>
 <body>
   <div class="chatbox">
     <h2>💬 Ask AI Assistant</h2>
-    <div id="chat"></div>
+    <div class="chat-area" id="chatArea">
+      <!-- Messages will appear here -->
+    </div>
     <div class="input-area">
       <input type="text" id="question" placeholder="Type your question..." />
       <button onclick="askAI()">Send</button>
@@ -26,24 +153,47 @@
   </div>
 
   <script>
+    const chatArea = document.getElementById('chatArea');
+
     async function askAI() {
       const input = document.getElementById("question");
-      const chat = document.getElementById("chat");
       const question = input.value.trim();
       if (!question) return;
 
-      chat.innerHTML += `<div class="message user">${question}</div>`;
-      input.value = "";
+      // Show user's message
+      appendMessage(question, 'user', 'You');
+      input.value = '';
 
-      const response = await fetch("/ask-ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question })
-      });
+      try {
+        const res = await fetch("/ask-ai", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question })
+        });
+        const data = await res.json();
+        appendMessage(data.answer || 'Error fetching response', 'ai', 'AI Assistant');
+      } catch (err) {
+        appendMessage('Error contacting server', 'ai', 'AI Assistant');
+        console.error(err);
+      }
+    }
 
-      const data = await response.json();
-      chat.innerHTML += `<div class="message ai">${data.answer || "Error fetching response"}</div>`;
-      chat.scrollTop = chat.scrollHeight;
+    function appendMessage(text, who, name) {
+      const div = document.createElement('div');
+      div.className = `message ${who}`;
+      div.innerHTML = `<strong>${name}</strong>${escapeHtml(text)}`;
+      chatArea.appendChild(div);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;')
+        .replaceAll('\n','<br>');
     }
   </script>
 </body>

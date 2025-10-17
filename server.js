@@ -8,6 +8,12 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const OpenAI = require("openai");
+const cron = require('node-cron');
+const sgMail = require('@sendgrid/mail');
+
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 
 const app = express();
 
@@ -17,10 +23,15 @@ if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
 
+
+
 // Middleware
 app.use(express.urlencoded({ extended: true })); // parses POST data
 app.use(express.json());
+// Add this at the top, after 'const express = require("express");'
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.static(path.join(__dirname, 'public')));
+
 console.log('Session secret:', process.env.SESSION_SECRET);
 app.use(session({
   secret: process.env.SESSION_SECRET, // must NOT be undefined
@@ -51,8 +62,49 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 app.use('/uploads', express.static(uploadPath));
 
+const videoUpload = multer({ storage: storage }).single('video_file');
+
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+
+//Helper functions
+
+//Noifications 
+
+async function sendEmailNotification(to, subject, message) {
+  try {
+    const from = process.env.SENDGRID_FROM;
+    const msg = {
+      to,
+      from,
+      replyTo: from, // optional, ensures replies go to same sender
+      subject,
+      text: message,
+      html: `<p>${message}</p>`
+    };
+
+    const response = await sgMail.send(msg);
+
+    // Log full response from SendGrid
+    console.log(`✅ Email sent to ${to}: ${subject}`);
+    console.log('SendGrid response status code:', response[0].statusCode);
+    console.log('SendGrid response headers:', response[0].headers);
+
+  } catch (error) {
+    console.error(`❌ Error sending email to ${to}:`, error.message);
+
+    // More detailed SendGrid error info
+    if (error.response && error.response.body) {
+      console.error('SendGrid response body:', JSON.stringify(error.response.body, null, 2));
+    } else if (error.code) {
+      console.error('Error code:', error.code);
+    } else {
+      console.error('Unknown error object:', error);
+    }
+  }
+}
 
 
 
@@ -215,6 +267,48 @@ app.get('/home', async (req, res) => {
   }
 });
 
+// Enroll student in a course
+app.post('/course/:id/enroll', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'Student') return res.redirect('/login');
+
+  const student_id = req.session.user.id;
+  const course_id = parseInt(req.params.id);
+
+  try {
+    // Check if already enrolled
+    const already = await pool.query(
+      "SELECT * FROM enrollments WHERE student_id=$1 AND course_id=$2",
+      [student_id, course_id]
+    );
+
+    if (already.rows.length === 0) {
+      // Enroll the student
+      await pool.query(
+        "INSERT INTO enrollments (student_id, course_id) VALUES ($1, $2)",
+        [student_id, course_id]
+      );
+
+      // Create empty submissions for all existing assignments
+      const assignmentsResult = await pool.query(
+        "SELECT id FROM assignments WHERE course_id=$1",
+        [course_id]
+      );
+
+      for (let a of assignmentsResult.rows) {
+        await pool.query(
+          "INSERT INTO submissions (assignment_id, student_id) VALUES ($1, $2)",
+          [a.id, student_id]
+        );
+      }
+    }
+
+    res.redirect('/home');
+  } catch (err) {
+    console.error(err);
+    res.send("Error enrolling in course");
+  }
+});
+
 
 
 
@@ -236,6 +330,41 @@ app.post('/create-course', async (req, res) => {
   }
 });
 
+//Manage uploads
+
+app.get('/uploads/:filename', (req, res) => {
+  const filePath = path.join(__dirname, 'uploads', req.params.filename);
+  const ext = path.extname(filePath).toLowerCase();
+
+  // Map extensions to MIME types
+  const mimeTypes = {
+    '.pdf': 'application/pdf',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.gif': 'image/gif',
+    '.mp4': 'video/mp4',
+    '.webm': 'video/webm',
+    '.ogg': 'video/ogg'
+  };
+
+  const mimeType = mimeTypes[ext] || 'application/octet-stream';
+  res.setHeader('Content-Type', mimeType);
+
+  // Force inline for known types
+  if (mimeTypes[ext]) {
+    res.setHeader('Content-Disposition', 'inline');
+  } else {
+    res.setHeader('Content-Disposition', 'attachment');
+  }
+
+  res.sendFile(filePath, err => {
+    if (err) {
+      console.error(err);
+      res.status(404).send('File not found');
+    }
+  });
+});
 
 
 //Assignments
@@ -289,19 +418,49 @@ app.post('/course/:id/assignments/create', upload.single('file'), async (req, re
   const { id } = req.params;
   const { title, description, due_date, points } = req.body;
 
-  const marks = parseInt(points);
-  if (isNaN(marks) || marks < 0 || marks > 100) {
-    return res.send('Points must be between 0 and 100');
+  try {
+    const marks = parseInt(points);
+    if (isNaN(marks) || marks < 0 || marks > 100) {
+      return res.send('Points must be between 0 and 100');
+    }
+
+    const file_path = req.file ? req.file.filename : null;
+
+    await pool.query(
+      'INSERT INTO assignments (course_id, title, description, due_date, file_path, points) VALUES ($1, $2, $3, $4, $5, $6)',
+      [id, title, description, due_date, file_path, marks]
+    );
+
+    // ✅ Notification block
+    try {
+      const students = await pool.query(
+        `SELECT u.email
+         FROM enrollments e
+         JOIN users u ON u.id = e.student_id
+         WHERE e.course_id = $1`,
+        [id]
+      );
+
+      await Promise.all(
+        students.rows.map(s =>
+          sendEmailNotification(
+            s.email,
+            '📘 New Assignment Posted',
+            `A new assignment "${title}" has been uploaded in your course.\nDue: ${due_date || 'Not specified'}.`
+          )
+        )
+      );
+
+      console.log(`✅ Notification emails sent for new assignment in course ${id}`);
+    } catch (notifyErr) {
+      console.error('❌ Notification sending failed (assignment):', notifyErr);
+    }
+
+    res.redirect(`/course/${id}/assignments`);
+  } catch (err) {
+    console.error('❌ Error creating assignment:', err);
+    res.send('Error creating assignment');
   }
-
-  const file_path = req.file ? req.file.filename : null;
-
-  await pool.query(
-    'INSERT INTO assignments (course_id, title, description, due_date, file_path, points) VALUES ($1, $2, $3, $4, $5, $6)',
-    [id, title, description, due_date, file_path, marks]
-  );
-
-  res.redirect(`/course/${id}/assignments`);
 });
 
 
@@ -461,7 +620,7 @@ app.post('/course/:id/forum', async (req, res) => {
 
   const courseId = req.params.id;
   const userId = req.session.user.id;
-  const { content, parent_id } = req.body; // optional parent_id
+  const { content, parent_id } = req.body;
 
   if (!content || content.trim() === '') return res.send('Cannot post empty content');
 
@@ -470,41 +629,79 @@ app.post('/course/:id/forum', async (req, res) => {
       'INSERT INTO course_forum (course_id, user_id, content, parent_id) VALUES ($1, $2, $3, $4)',
       [courseId, userId, content, parent_id || null]
     );
+
+    // ✅ Notification block
+    try {
+      const students = await pool.query(
+        `SELECT u.email
+         FROM enrollments e
+         JOIN users u ON u.id = e.student_id
+         WHERE e.course_id = $1 AND u.id <> $2`,
+        [courseId, userId]
+      );
+
+      await Promise.all(
+        students.rows.map(s =>
+          sendEmailNotification(
+            s.email,
+            '💬 New Forum Message',
+            `A new post was added to the discussion forum of your course.`
+          )
+        )
+      );
+      console.log(`✅ Forum notifications sent for course ${courseId}`);
+    } catch (notifyErr) {
+      console.error('❌ Notification sending failed (forum):', notifyErr);
+    }
+
     res.redirect(`/course/${courseId}/forum`);
   } catch (err) {
-    console.error(err);
-    res.send("Error posting to forum");
+    console.error('❌ Error posting to forum:', err);
+    res.send('Error posting to forum');
   }
 });
 
 
 
+
 //Materials
 
-// GET course page with materials
-app.get('/course/:id', async (req, res) => {
+// GET course page with materials and videos
+app.get('/course/:courseId', async (req, res) => {
   if (!req.session.user) return res.redirect('/login');
 
+  const courseId = req.params.courseId;
   const user = req.session.user;
-  const courseId = req.params.id;
+  const role = user.role;
 
   try {
     const courseRes = await pool.query("SELECT * FROM courses WHERE id=$1", [courseId]);
     if (courseRes.rows.length === 0) return res.send("Course not found");
-
     const course = courseRes.rows[0];
 
-    // Fetch materials
     const materialsRes = await pool.query(
       'SELECT * FROM course_materials WHERE course_id=$1 ORDER BY uploaded_at DESC',
       [courseId]
     );
     const materials = materialsRes.rows;
 
-    res.render('course_page', { user, course, materials, role: user.role });
+    const chaptersRaw = await pool.query('SELECT * FROM chapters WHERE course_id=$1', [courseId]);
+    const chapters = chaptersRaw.rows;
+
+    for (let chapter of chapters) {
+      const topicsRaw = await pool.query('SELECT * FROM topics WHERE chapter_id=$1', [chapter.id]);
+      chapter.topics = topicsRaw.rows;
+
+      for (let topic of chapter.topics) {
+        const videosRaw = await pool.query('SELECT * FROM videos WHERE topic_id=$1', [topic.id]);
+        topic.videos = videosRaw.rows;
+      }
+    }
+
+    res.render('course_page', { course, user, role, materials, chapters });
   } catch (err) {
     console.error(err);
-    res.send("Error loading course");
+    res.render('course_page', { course: {}, user: {}, role: '', materials: [], chapters: [] });
   }
 });
 
@@ -517,7 +714,7 @@ app.post('/course/:id/materials/upload', upload.single('material_file'), async (
   if (!req.session.user || req.session.user.role !== 'Teacher') return res.redirect('/login');
 
   const courseId = req.params.id;
-  const { material_title } = req.body; // We'll use this for file_name
+  const { material_title } = req.body;
   const file = req.file;
 
   if (!material_title || !file) {
@@ -530,12 +727,37 @@ app.post('/course/:id/materials/upload', upload.single('material_file'), async (
       [courseId, material_title, file.filename]
     );
 
+    // ✅ Notification block
+    try {
+      const students = await pool.query(
+        `SELECT u.email
+         FROM enrollments e
+         JOIN users u ON u.id = e.student_id
+         WHERE e.course_id = $1`,
+        [courseId]
+      );
+
+      await Promise.all(
+        students.rows.map(s =>
+          sendEmailNotification(
+            s.email,
+            '📚 New Study Material Added',
+            `New material "${material_title}" has been uploaded in your course (Course ID: ${courseId}).`
+          )
+        )
+      );
+      console.log(`✅ Material upload notifications sent for course ${courseId}`);
+    } catch (notifyErr) {
+      console.error('❌ Notification sending failed (materials):', notifyErr);
+    }
+
     res.redirect(`/course/${courseId}`);
   } catch (err) {
-    console.error(err);
+    console.error('❌ Error uploading material:', err);
     res.send('Error uploading material');
   }
 });
+
 
 
 
@@ -546,6 +768,9 @@ app.get('/course/:id/materials', async (req, res) => {
   if (!user) return res.redirect('/login');
 
   try {
+    const courseResult = await pool.query(`SELECT * FROM courses WHERE id=$1`, [courseId]);
+    const course = courseResult.rows[0];
+
     const materialsResult = await pool.query(
       `SELECT * FROM course_materials WHERE course_id=$1 ORDER BY id DESC`,
       [courseId]
@@ -553,7 +778,8 @@ app.get('/course/:id/materials', async (req, res) => {
 
     res.render('course_materials', {
       user,
-      courseId,
+      role: user.role,
+      course,
       materials: materialsResult.rows
     });
   } catch (err) {
@@ -561,6 +787,7 @@ app.get('/course/:id/materials', async (req, res) => {
     res.send('Error fetching course materials');
   }
 });
+
 
 
 
@@ -850,13 +1077,14 @@ app.get('/practice/quiz/:quizId', async (req, res) => {
 
 
 //SUBMT quiz
+// SUBMIT quiz
 app.post('/practice/quiz/:quizId/submit', async (req, res) => {
   const { quizId } = req.params;
   const studentId = req.session.user.id;
   const answers = req.body;
 
   try {
-    // 1️⃣ Fetch the quiz first
+    // 1️⃣ Fetch the quiz
     const quizRes = await pool.query('SELECT * FROM quizzes WHERE id=$1', [quizId]);
     if (quizRes.rows.length === 0) return res.send('Quiz not found');
     const quiz = quizRes.rows[0];
@@ -865,11 +1093,13 @@ app.post('/practice/quiz/:quizId/submit', async (req, res) => {
     const questionsRes = await pool.query('SELECT * FROM quiz_questions WHERE quiz_id=$1', [quizId]);
     const questions = questionsRes.rows;
 
+    if (questions.length === 0) return res.send('No questions found for this quiz');
+
     // 3️⃣ Calculate per-question points
     const totalPoints = quiz.total_points;
     const perQuestionPoints = totalPoints / questions.length;
 
-    // 4️⃣ Calculate score
+    // 4️⃣ Calculate score (can be fractional)
     let score = 0;
     const questionsResult = questions.map(q => {
       const isCorrect = answers[q.id] === q.correct_option;
@@ -895,31 +1125,29 @@ app.post('/practice/quiz/:quizId/submit', async (req, res) => {
     // 6️⃣ Calculate EXP
     const expGained = Math.round(score * 2 + Math.max(0, 60 - timeTaken / 10)); // example formula
 
-    // 7️⃣ Update quiz_submissions
+    // 7️⃣ Update quiz_submissions (score as NUMERIC)
     await pool.query(
-      `INSERT INTO quiz_submissions (quiz_id, student_id, score, submitted_at, time_taken)
-       VALUES ($1,$2,$3,NOW(),$4)
+      `INSERT INTO quiz_submissions (quiz_id, student_id, score, submitted_at)
+       VALUES ($1,$2,$3,NOW())
        ON CONFLICT (quiz_id, student_id)
        DO UPDATE SET 
          score = EXCLUDED.score,
-         submitted_at = NOW(),
-         time_taken = EXCLUDED.time_taken`,
-      [quizId, studentId, score, timeTaken]
+         submitted_at = NOW()`,
+      [quizId, studentId, score]  // fractional score now works
     );
 
-    // 8️⃣ Update student_total_score (add score & exp)
+    // 8️⃣ Update student_total_score
     await pool.query(
-      `INSERT INTO student_total_score (student_id, total_score, exp_total)
-       VALUES ($1, $2, $3)
+      `INSERT INTO student_total_score (student_id, total_score)
+       VALUES ($1, $2)
        ON CONFLICT (student_id)
        DO UPDATE SET 
          total_score = (
            SELECT COALESCE(SUM(score),0) 
            FROM quiz_submissions 
            WHERE student_id=$1
-         ),
-         exp_total = student_total_score.exp_total + $3`,
-      [studentId, score, expGained]
+         )`,
+      [studentId, score]
     );
 
     // 9️⃣ Render result
@@ -972,6 +1200,7 @@ const openai = new OpenAI({
 
 // Ask AI route
 // GET Ask AI page
+// GET Ask AI page
 app.get("/ask-ai", (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   res.render("ask_ai", { user: req.session.user });
@@ -998,9 +1227,132 @@ app.post("/ask-ai", async (req, res) => {
 });
 
 
+//Notification System
 
 
-app.listen(5000, () => {
-  console.log('Server running on port 5000');
+// Run every day at 9:00 AM India time
+cron.schedule('0 9 * * *', async () => {
+  console.log('🕘 Running daily deadline check...');
+
+  try {
+    const result = await pool.query(
+      `SELECT a.id, a.title, a.due_date, u.email
+       FROM assignments a
+       JOIN enrollments e ON e.course_id = a.course_id
+       JOIN users u ON u.id = e.student_id
+       WHERE (a.due_date::date) = (CURRENT_DATE + INTERVAL '1 day')::date`
+    );
+
+    if (result.rows.length === 0) {
+      console.log('✅ No assignments due tomorrow.');
+      return;
+    }
+
+    await Promise.all(
+      result.rows.map(row =>
+        sendEmailNotification(
+          row.email,
+          '⏰ Assignment Due Tomorrow',
+          `Reminder: Your assignment "${row.title}" is due tomorrow (${new Date(row.due_date).toDateString()}).`
+        )
+      )
+    );
+
+    console.log(`✅ Sent ${result.rows.length} deadline reminders.`);
+  } catch (err) {
+    console.error('❌ Error in deadline reminder cron:', err);
+  }
+}, {
+  scheduled: true,
+  timezone: 'Asia/Kolkata'
 });
 
+
+//Video lectures
+
+
+// CREATE CHAPTER
+app.post('/course/:courseId/chapter/create', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'Teacher') return res.redirect('/login');
+  const { courseId } = req.params;
+  const { title } = req.body;
+  await pool.query('INSERT INTO chapters (course_id, title) VALUES ($1, $2)', [courseId, title]);
+  res.redirect(`/course/${courseId}`);
+});
+
+// CREATE TOPIC
+app.post('/chapter/:chapterId/topic/create', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'Teacher') return res.redirect('/login');
+  const { chapterId } = req.params;
+  const { title } = req.body;
+  await pool.query('INSERT INTO topics (chapter_id, title) VALUES ($1, $2)', [chapterId, title]);
+
+  const chapterRes = await pool.query('SELECT course_id FROM chapters WHERE id=$1', [chapterId]);
+  const courseId = chapterRes.rows[0].course_id;
+  res.redirect(`/course/${courseId}`);
+});
+
+// UPLOAD VIDEO
+app.post('/course/:courseId/videos/upload', upload.single('video_file'), async (req, res) => {
+  try {
+    const courseId = req.params.courseId;
+    const { chapter_title, topic_title, video_title } = req.body;
+    const filePath = req.file.filename; // assuming multer saves file to 'uploads/' folder
+
+    // 1️⃣ Check if chapter exists
+    let chapterResult = await pool.query(
+      'SELECT * FROM chapters WHERE course_id=$1 AND title=$2',
+      [courseId, chapter_title.trim()]
+    );
+
+    let chapterId;
+    if (chapterResult.rows.length > 0) {
+      chapterId = chapterResult.rows[0].id;
+    } else {
+      // Chapter doesn't exist, create it
+      const newChapter = await pool.query(
+        'INSERT INTO chapters (course_id, title) VALUES ($1, $2) RETURNING id',
+        [courseId, chapter_title.trim()]
+      );
+      chapterId = newChapter.rows[0].id;
+    }
+
+    // 2️⃣ Check if topic exists under this chapter
+    let topicResult = await pool.query(
+      'SELECT * FROM topics WHERE chapter_id=$1 AND title=$2',
+      [chapterId, topic_title.trim()]
+    );
+
+    let topicId;
+    if (topicResult.rows.length > 0) {
+      topicId = topicResult.rows[0].id;
+    } else {
+      // Topic doesn't exist, create it
+      const newTopic = await pool.query(
+        'INSERT INTO topics (chapter_id, title) VALUES ($1, $2) RETURNING id',
+        [chapterId, topic_title.trim()]
+      );
+      topicId = newTopic.rows[0].id;
+    }
+
+    // 3️⃣ Insert video
+    await pool.query(
+      'INSERT INTO videos (topic_id, title, file_path) VALUES ($1, $2, $3)',
+      [topicId, video_title.trim(), filePath]
+    );
+
+    res.redirect(`/course/${courseId}`); // back to course page
+  } catch (err) {
+    console.error(err);
+    res.send('Error uploading video: ' + err.message);
+  }
+});
+
+
+
+
+
+
+
+
+module.exports = app;

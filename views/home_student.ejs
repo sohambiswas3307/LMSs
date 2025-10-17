@@ -3,148 +3,293 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Dashboard | InnovateEd</title>
+  <title>Student Dashboard | Learnthru</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f8fafc;
-      margin: 0;
-      padding: 0;
-      color: #1e293b;
+    :root {
+      --bg-light: #f7f9fc;
+      --white: #ffffff;
+      --text-dark: #2a3344;
+      --text-medium: #6c757d;
+      --accent-blue: #4562d9;
+      --accent-pink: #f07b78;
+      --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.08);
+      --border-radius-lg: 18px;
+      --border-radius-md: 12px;
+      --transition-speed: 0.3s;
     }
 
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--bg-light);
+      margin: 0;
+      padding: 0;
+      color: var(--text-dark);
+    }
+
+    /* Header */
     header {
-      background-color: white;
-      padding: 20px 60px;
+      background-color: var(--white);
+      padding: 15px 60px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border-bottom: 1px solid #e9eef5;
+      position: relative;
+      z-index: 100;
     }
 
     header h1 {
       font-size: 1.6rem;
-      font-weight: 600;
-      color: #0f172a;
+      font-weight: 700;
+      margin: 0;
     }
 
     header span {
-      color: #0ea5e9;
-      font-weight: 700;
+      color: var(--text-medium);
+      font-weight: 500;
     }
 
-    .container {
-      max-width: 720px;
-      margin: 80px auto;
-      background: #ffffff;
-      padding: 40px 50px;
-      border-radius: 16px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      text-align: center;
+    /* Profile dropdown */
+    .user-menu-container {
+      display: flex;
+      align-items: center;
+      position: relative;
     }
 
-    h2 {
-      font-size: 2rem;
-      color: #0f172a;
-      margin-bottom: 20px;
-    }
-
-    p {
-      font-size: 1rem;
-      color: #475569;
-    }
-
-    .btn-practice {
-      display: inline-block;
-      background-color: #0ea5e9;
-      color: white;
-      padding: 12px 25px;
-      border-radius: 25px;
-      text-decoration: none;
+    .user-name {
       font-weight: 600;
-      margin-bottom: 30px;
-      transition: 0.3s;
+      margin-right: 15px;
+      font-size: 1rem;
     }
 
-    .btn-practice:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
+    .profile-icon {
+      width: 40px;
+      height: 40px;
+      background-color: var(--accent-blue);
+      color: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: transform var(--transition-speed);
     }
 
-    ul {
-      list-style: none;
-      padding: 0;
+    .profile-icon:hover { transform: scale(1.05); }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 55px;
+      right: 0;
+      background-color: var(--white);
+      border-radius: var(--border-radius-md);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      width: 220px;
+      padding: 10px 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: opacity var(--transition-speed), transform var(--transition-speed);
     }
 
-    li {
-      background-color: #f1f5f9;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-      transition: transform 0.2s, box-shadow 0.2s;
+    .dropdown-menu.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-info {
+      padding: 10px 20px;
+      border-bottom: 1px solid #e9eef5;
       text-align: left;
     }
 
-    li:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    .dropdown-info strong { display: block; margin-bottom: 2px; }
+    .dropdown-info span { font-size: 0.85rem; color: var(--text-medium); word-wrap: break-word; }
+    .dropdown-menu a { display: block; padding: 10px 20px; text-decoration: none; color: var(--accent-pink); font-weight: 500; transition: background-color 0.2s; }
+    .dropdown-menu a:hover { background-color: var(--bg-light); }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 40px auto;
+      background: var(--white);
+      padding: 40px;
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-soft);
+      position: relative;
     }
 
-    li a {
-      color: #0ea5e9;
-      font-weight: 600;
-      font-size: 1.1rem;
-      text-decoration: none;
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      border-bottom: 2px solid rgba(0,0,0,0.05);
+      padding-bottom: 20px;
     }
 
-    li a:hover {
-      text-decoration: underline;
+    .dashboard-header h1 { margin: 0; font-size: 2rem; color: var(--accent-blue); }
+
+    .dashboard-grid { display: flex; gap: 40px; flex-wrap: wrap; align-items: flex-start; }
+
+    .courses-panel { flex: 1 1 100%; }
+
+    /* Course Cards */
+    .course-card {
+      background-color: var(--white);
+      border: 1px solid #e9eef5;
+      padding: 20px;
+      border-radius: var(--border-radius-md);
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
     }
 
-    li strong {
-      color: #0f172a;
+    .course-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
     }
 
-    li p {
-      margin: 8px 0;
-      color: #334155;
+    .course-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 5px; height: 100%;
+      background-color: var(--accent-blue);
+      border-top-left-radius: var(--border-radius-md);
+      border-bottom-left-radius: var(--border-radius-md);
     }
+
+    .course-card strong { font-size: 1.1rem; color: var(--accent-blue); font-weight: 700; }
+    .course-card p { color: var(--text-medium); margin-top:5px; margin-bottom:10px; }
+
+    .course-actions {
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(0,0,0,0.1);
+    }
+
+    .course-actions button {
+      background:none; border:none; color:var(--accent-blue);
+      font-weight:600; cursor:pointer; font-size:0.95rem;
+      transition: color var(--transition-speed);
+    }
+
+    .course-actions button:hover { color:#5d75e6; }
+
+    .already-enrolled { color: var(--accent-pink); font-weight:600; }
+
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Welcome to <span>InnovateEd</span></h1>
-    <p>📘 Learn. Grow. Succeed.</p>
+    <h1><span style="color:#6c757d;">Learn</span>thru</h1>
+
+    <div class="user-menu-container">
+      <p class="user-name"><%= user.username %></p>
+
+      <div class="profile-icon" id="profileIcon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+
+      <div class="dropdown-menu" id="profileDropdown">
+        <div class="dropdown-info">
+          <strong><%= user.full_name %></strong>
+          <span><%= user.email %></span>
+        </div>
+        <a href="/logout">Logout</a>
+      </div>
+    </div>
   </header>
 
   <div class="container">
-    <a href="/practice" class="btn-practice">Go to Practice</a>
+    <div class="dashboard-header">
+      <h1>Welcome, <%= user.full_name %></h1>
+    </div>
 
-    <h2>Enrolled Courses</h2>
+    <div class="dashboard-grid">
+      <div class="courses-panel">
+        <h2>Your Enrolled Courses</h2>
 
-    <% if(enrolledCourses.length > 0){ %>
-      <ul>
-        <% enrolledCourses.forEach(course => { %>
-          <li>
-            <a href="/course/<%= course.id %>"><%= course.title %></a> - <%= course.duration %>
-            <p><%= course.description %></p>
-            <p>
-              <strong>Total Grade:</strong> 
-              <% if(course.totalMaxPoints > 0){ %>
-                <%= course.totalGrade %> / <%= course.totalMaxPoints %>
-              <% } else { %>
-                N/A
-              <% } %>
-            </p>
-          </li>
-        <% }) %>
-      </ul>
-    <% } else { %>
-      <p>You are not enrolled in any courses yet.</p>
-    <% } %>
+        <% if(enrolledCourses.length > 0){ %>
+          <% enrolledCourses.forEach(course => { %>
+            <div class="course-card">
+              <strong><%= course.title %></strong> (Duration: <%= course.duration %>)
+              <p><%= course.description %></p>
+              <p><strong>Total Grade:</strong> 
+                <% if(course.totalMaxPoints > 0){ %>
+                  <%= course.totalGrade %> / <%= course.totalMaxPoints %>
+                <% } else { %>
+                  N/A
+                <% } %>
+              </p>
+              <div class="course-actions">
+                <a href="/course/<%= course.id %>">View Course</a>
+                <a href="/course/<%= course.id %>/assignments">Assignments</a>
+                <a href="/course/<%= course.id %>/quiz">Quizzes</a>
+              </div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <p>You are not enrolled in any courses yet.</p>
+        <% } %>
+
+      </div>
+
+
+      <div class="courses-panel">
+        <h2>All Courses</h2>
+
+        <% if(courses.length > 0){ %>
+          <% courses.forEach(course => { %>
+            <div class="course-card">
+              <strong><%= course.title %></strong> (Duration: <%= course.duration %>)
+              <p><%= course.description %></p>
+
+              <div class="course-actions">
+                <% if(!enrolledCourseIds.includes(course.id)) { %>
+                  <form action="/course/<%= course.id %>/enroll" method="POST" style="display:inline;">
+  <button type="submit">Enroll Now</button>
+</form>
+
+                <% } else { %>
+                  <span class="already-enrolled">Already Enrolled</span>
+                <% } %>
+              </div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <p>No courses available at the moment.</p>
+        <% } %>
+
+      </div>
+
+      
+    </div>
   </div>
+
+  <script>
+    // Profile dropdown
+    const profileIcon = document.getElementById('profileIcon');
+    const profileDropdown = document.getElementById('profileDropdown');
+
+    profileIcon.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('active');
+    });
+
+    window.addEventListener('click', (e) => {
+      if(profileDropdown.classList.contains('active') && !profileIcon.contains(e.target) && !profileDropdown.contains(e.target)){
+        profileDropdown.classList.remove('active');
+      }
+    });
+  </script>
 
 </body>
 </html>

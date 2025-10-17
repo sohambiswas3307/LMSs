@@ -78,6 +78,8 @@ CREATE TABLE quiz_questions (
     correct_option CHAR(1) NOT NULL
 );
 
+SELECT * from quiz_questions;
+
 -- Quiz submissions per student
 CREATE TABLE quiz_submissions (
     id SERIAL PRIMARY KEY,
@@ -87,6 +89,7 @@ CREATE TABLE quiz_submissions (
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT unique_quiz_student UNIQUE(quiz_id, student_id)  -- required for ON CONFLICT
 );
+
 
 -- Total score per student per course
 CREATE TABLE student_quiz_totals (
@@ -104,6 +107,8 @@ CREATE TABLE student_total_score (
 );
 
 SELECT * from student_total_score;
+ALTER TABLE quiz_submissions
+ALTER COLUMN score TYPE NUMERIC;
 
 SELECT * from quizzes;
 SELECT * from quiz_submissions;
@@ -119,6 +124,13 @@ ALTER TABLE quiz_submissions ADD COLUMN started_at TIMESTAMP;
 ALTER TABLE student_total_score
 ADD COLUMN exp_total INT DEFAULT 0;
 
+ALTER TABLE student_quiz_totals
+ALTER COLUMN total_score TYPE NUMERIC;
+
+ALTER TABLE student_total_score
+ALTER COLUMN total_score TYPE NUMERIC;
+
+
 ALTER TABLE student_total_score
 ADD CONSTRAINT student_unique UNIQUE (student_id);
 
@@ -130,6 +142,9 @@ CREATE TABLE course_materials (
   uploaded_at TIMESTAMP DEFAULT NOW()
 );
 
+SELECT * from course_materials;
+
+
 CREATE TABLE course_forum (
   id SERIAL PRIMARY KEY,
   course_id INT REFERENCES courses(id) ON DELETE CASCADE,
@@ -138,4 +153,67 @@ CREATE TABLE course_forum (
   created_at TIMESTAMP DEFAULT NOW()
 );
 ALTER TABLE course_forum ADD COLUMN parent_id INT REFERENCES course_forum(id) ON DELETE CASCADE;
+
+-- Chapters per course
+CREATE TABLE chapters (
+    id SERIAL PRIMARY KEY,
+    course_id INT REFERENCES courses(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Topics per chapter
+CREATE TABLE topics (
+    id SERIAL PRIMARY KEY,
+    chapter_id INT REFERENCES chapters(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Videos per topic
+CREATE TABLE videos (
+    id SERIAL PRIMARY KEY,
+    topic_id INT REFERENCES topics(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT NOW()
+);
+
+SELECT * from chapters;
+SELECT * from courses;
+SELECT * from topics;
+SELECT * from videos;
+SELECT * from course_forum;
+
+SELECT * from quizzes;
+
+
+
+-- Insert quizzes for course_id = 2
+INSERT INTO quizzes (course_id, title, description, total_points)
+VALUES
+(2, 'Intro to Programming Quiz', 'A basic quiz on programming fundamentals.', 10),
+(2, 'Data Structures Quiz', 'Test your knowledge on arrays, lists, and trees.', 15),
+(2, 'Algorithms Quiz', 'Assess your understanding of sorting and searching algorithms.', 20);
+
+-- Insert questions for the first quiz (assume its id = 1)
+INSERT INTO quiz_questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option)
+VALUES
+(1, 'What does "HTML" stand for?', 'Hyper Text Markup Language', 'Home Tool Markup Language', 'Hyperlinks and Text Markup Language', 'Hyperlinking Text Marking Language', 'A'),
+(1, 'Which tag is used for a paragraph in HTML?', '<p>', '<div>', '<span>', '<para>', 'A'),
+(1, 'HTML files are saved with which extension?', '.htm', '.html', '.txt', '.doc', 'B');
+
+-- Insert questions for the second quiz (assume id = 2)
+INSERT INTO quiz_questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option)
+VALUES
+(2, 'Which data structure uses LIFO?', 'Queue', 'Stack', 'Array', 'Linked List', 'B'),
+(2, 'Which data structure is best for FIFO operations?', 'Stack', 'Queue', 'Tree', 'Graph', 'B'),
+(2, 'Which of these is NOT a linear data structure?', 'Array', 'Linked List', 'Tree', 'Queue', 'C');
+
+-- Insert questions for the third quiz (assume id = 3)
+INSERT INTO quiz_questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option)
+VALUES
+(3, 'What is the time complexity of binary search?', 'O(n)', 'O(log n)', 'O(n log n)', 'O(1)', 'B'),
+(3, 'Which algorithm is used to sort in ascending order?', 'Merge Sort', 'DFS', 'BFS', 'Dijkstra', 'A'),
+(3, 'Which algorithm finds shortest paths in weighted graphs?', 'DFS', 'BFS', 'Dijkstra', 'Prim', 'C');
 

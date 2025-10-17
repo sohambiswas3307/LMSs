@@ -1,23 +1,129 @@
-<h1>Global Leaderboard</h1>
-<table border="1" cellpadding="10">
-  <thead>
-    <tr>
-      <th>Rank</th>
-      <th>Name</th>
-      <th>EXP Total</th>
-      <th>Quizzes Solved</th>
-      <th>Accuracy (%)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% leaderboard.forEach((student, idx) => { %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Leaderboard | InnovateEd</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-light: #f8fafc;
+    --white: #ffffff;
+    --text-dark: #1e293b;
+    --text-medium: #475569;
+    --accent-blue: #0ea5e9;
+    --accent-light-blue: #e0f2fe;
+    --shadow-soft: 0 4px 15px rgba(0,0,0,0.05);
+    --border-radius-lg: 16px;
+    --border-radius-md: 12px;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-light);
+    margin: 0;
+    padding: 0;
+    color: var(--text-dark);
+  }
+
+  header {
+    background-color: var(--white);
+    padding: 20px 60px;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .back-btn {
+    position: absolute;
+    top: 20px;
+    right: 60px;
+    background-color: var(--accent-blue);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s;
+  }
+  .back-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 40px auto;
+    background-color: var(--white);
+    padding: 30px 40px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-soft);
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  th {
+    background-color: var(--accent-light-blue);
+    font-weight: 600;
+  }
+
+  tr:hover {
+    background-color: #f0f9ff;
+  }
+
+  td {
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Global Leaderboard</h1>
+  <a class="back-btn" href="/practice">← Back to Practice</a>
+</header>
+
+<div class="container">
+  <table>
+    <thead>
       <tr>
-        <td><%= idx + 1 %></td>
-        <td><%= student.full_name %></td>
-        <td><%= student.exp_total %></td>
-        <td><%= student.quizzes_solved %></td>
-        <td><%= student.accuracy_rate %></td>
+        <th>Rank</th>
+        <th>Name</th>
+        <th>EXP Total</th>
+        <th>Quizzes Solved</th>
+        <th>Accuracy (%)</th>
       </tr>
-    <% }) %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% leaderboard.forEach((student, idx) => { %>
+        <tr>
+          <td><%= idx + 1 %></td>
+          <td><%= student.full_name %></td>
+          <td><%= student.exp_total %></td>
+          <td><%= student.quizzes_solved %></td>
+          <td><%= student.accuracy_rate %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

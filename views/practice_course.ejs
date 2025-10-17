@@ -4,89 +4,138 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Quizzes | InnovateEd</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --bg-light: #f8fafc;
+    --white: #ffffff;
+    --text-dark: #1e293b;
+    --text-medium: #475569;
+    --accent-blue: #0ea5e9;
+    --accent-light-blue: #e0f2fe;
+    --accent-pink: #fca5a5;
+    --shadow-soft: 0 4px 15px rgba(0,0,0,0.05);
+    --border-radius-lg: 16px;
+    --border-radius-md: 12px;
+  }
+
   body {
     font-family: 'Poppins', sans-serif;
-    background-color: #f8fafc;
+    background-color: var(--bg-light);
     margin: 0;
     padding: 0;
-    color: #1e293b;
+    color: var(--text-dark);
   }
 
   header {
-    background-color: white;
+    background-color: var(--white);
     padding: 20px 60px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-bottom: 1px solid #e2e8f0;
   }
 
   header h1 {
     font-size: 1.6rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-dark);
   }
 
   header span {
-    color: #0ea5e9;
+    color: var(--accent-blue);
     font-weight: 700;
   }
 
   .container {
-    max-width: 720px;
-    margin: 80px auto;
-    background: #ffffff;
+    max-width: 800px;
+    margin: 40px auto;
+    background: var(--white);
     padding: 40px 50px;
-    border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-soft);
+    position: relative;
+  }
+
+  /* Floating back button at top right */
+  .back-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--accent-blue);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s;
+    box-shadow: var(--shadow-soft);
+    z-index: 1000;
+  }
+  .back-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
   }
 
   h2 {
     font-size: 2rem;
     text-align: center;
     margin-bottom: 30px;
-    color: #0f172a;
+    color: var(--text-dark);
   }
 
-  ul { list-style: none; padding: 0; }
-  li {
-    background-color: #f1f5f9;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-    transition: transform 0.2s, box-shadow 0.2s;
+  ul {
+    list-style: none;
+    padding: 0;
   }
+
+  li {
+    background-color: var(--accent-light-blue);
+    padding: 20px 25px;
+    border-radius: var(--border-radius-md);
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   li:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
   }
 
   li a {
-    color: #0ea5e9;
+    color: var(--accent-blue);
     font-weight: 600;
     font-size: 1.2rem;
     text-decoration: none;
   }
-  li a:hover { text-decoration: underline; }
-
-  .back-link {
-    display: block;
-    margin-top: 25px;
-    text-align: center;
-    font-weight: 500;
-    color: #0ea5e9;
-    text-decoration: none;
+  li a:hover {
+    text-decoration: underline;
   }
-  .back-link:hover { text-decoration: underline; }
+
+  .quiz-points {
+    font-weight: 500;
+    color: var(--text-medium);
+  }
+
+  p.no-quizzes {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--text-medium);
+  }
 </style>
 </head>
 <body>
+
 <header>
   <h1>Welcome to <span>InnovateEd</span></h1>
-  <p>📘 Learn. Grow. Succeed.</p>
 </header>
+
+<!-- Floating back button -->
+<a class="back-btn" href="/practice">← Back to Courses</a>
 
 <div class="container">
   <h2>Quizzes for Course ID: <%= courseId %></h2>
@@ -96,15 +145,14 @@
       <% quizzes.forEach(quiz => { %>
         <li>
           <a href="/practice/quiz/<%= quiz.id %>"><%= quiz.title %></a>
-          (<%= quiz.total_points %> points)
+          <span class="quiz-points"><%= quiz.total_points %> points</span>
         </li>
       <% }) %>
     </ul>
   <% } else { %>
-    <p>No quizzes available for this course.</p>
+    <p class="no-quizzes">No quizzes available for this course.</p>
   <% } %>
-
-  <a class="back-link" href="/practice">← Back to Courses</a>
 </div>
+
 </body>
 </html>

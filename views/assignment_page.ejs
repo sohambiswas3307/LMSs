@@ -4,251 +4,405 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= course.title %> - Assignments</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-light: #f7f9fc;
+      --white: #ffffff;
+      --text-dark: #2a3344;
+      --text-medium: #6c757d;
+      --accent-vibrant-blue: #4562d9;
+      --accent-coral-pink: #f07b78;
+      --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.08);
+      --border-radius-lg: 18px;
+      --border-radius-md: 12px;
+      --transition-speed: 0.3s;
+      --border-color: #e9eef5;
+    }
+
     body {
       font-family: 'Poppins', sans-serif;
-      background-color: #f8fafc;
-      margin: 0;
-      padding: 0;
-      color: #1e293b;
+      background-color: var(--bg-light);
+      margin:0;
+      padding:0;
+      color: var(--text-dark);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
     header {
-      background-color: white;
-      padding: 20px 60px;
+      background: var(--white);
+      padding: 15px 40px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      box-shadow:0 2px 4px rgba(0,0,0,0.05);
+      border-bottom: 1px solid var(--border-color);
+    }
+    header h1 { font-size:1.6rem; font-weight:700; margin:0; }
+    header span { color: var(--accent-vibrant-blue); }
+    header p { font-size:0.95rem; color: var(--text-medium); margin:0; }
+
+    .dashboard-layout {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      max-width: 1400px;
+      margin: 40px auto;
+      gap: 30px;
+      padding: 0 40px;
     }
 
-    header h1 {
-      font-size: 1.6rem;
-      font-weight: 600;
-      color: #0f172a;
+    .sidebar-panel {
+      flex: 0 0 240px;
+      background: var(--white);
+      padding: 30px 20px;
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-soft);
+      align-self: flex-start;
     }
 
-    header span {
-      color: #0ea5e9;
-      font-weight: 700;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 60px auto;
-      background: #ffffff;
+    .main-content-panel {
+      flex: 1;
+      background: var(--white);
       padding: 40px 50px;
-      border-radius: 16px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-soft);
     }
 
-    h1 {
-      font-size: 1.8rem;
-      color: #0f172a;
-      margin-bottom: 5px;
+    .sidebar-panel h2 {
+      font-size: 1.2rem;
+      color: var(--text-dark);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+      font-weight: 600;
+    }
+    .nav-buttons-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    a.dashboard-button {
+      display: flex;
+      align-items: center;
+      padding:12px 15px;
+      background-color: #f0f3fa;
+      color:var(--text-dark);
+      font-size:0.95rem;
+      font-weight:500;
+      text-decoration:none;
+      border-radius:var(--border-radius-md);
+      transition: all var(--transition-speed);
+      text-align:left;
+      border: 1px solid var(--border-color);
+    }
+    a.dashboard-button:hover { 
+      background-color: #e0e5ff; 
+      color: var(--accent-vibrant-blue);
+      transform: translateX(2px); 
+    }
+    a.dashboard-button.active {
+      background-color: var(--accent-vibrant-blue);
+      color: var(--white);
+      font-weight: 600;
+      border-color: var(--accent-vibrant-blue);
+      box-shadow: 0 4px 8px rgba(69, 98, 217, 0.3);
     }
 
-    p {
+    .home-button {
+      padding: 8px 18px;
+      background-color: var(--accent-vibrant-blue);
+      color: var(--white);
       font-size: 0.95rem;
-      color: #475569;
-      margin-bottom: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 25px;
+      transition: all var(--transition-speed);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 2px 5px rgba(69, 98, 217, 0.3);
+    }
+    .home-button:hover {
+      background-color: #5d75e6;
+      transform: translateY(-1px);
     }
 
-    h2 {
-      font-size: 1.5rem;
-      color: #0f172a;
-      margin-bottom: 15px;
-      margin-top: 25px;
+    .main-content-panel > h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text-dark);
+    }
+
+    h2 { 
+      font-size:1.6rem;
+      margin-top: 30px;
+      margin-bottom:15px;
+      color: var(--text-dark);
+      border-bottom:2px solid var(--border-color);
+      padding-bottom:10px;
+      font-weight: 600;
     }
 
     form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 20px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-bottom:20px;
+      background:#f0f3fa;
+      padding:20px;
+      border-radius:var(--border-radius-md);
+      box-shadow: 0 4px 10px rgba(69,98,217,0.08);
+      border: 1px solid #d4e0ff;
     }
 
-    label {
-      font-weight: 500;
-      font-size: 0.95rem;
-    }
+    label { font-weight:500; font-size:0.95rem; }
 
-    input[type="text"],
-    input[type="number"],
-    input[type="date"],
-    input[type="file"],
-    textarea {
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid #cbd5e1;
-      font-size: 0.95rem;
-      transition: border-color 0.3s;
-      width: 100%;
+    input[type="text"], input[type="number"], input[type="date"], input[type="file"], textarea {
+      padding: 12px; 
+      border-radius:8px; 
+      border:1px solid #c8d3e4; 
+      font-size:0.95rem; 
+      transition:border-color 0.2s, box-shadow 0.2s; 
+      width:100%;
+      box-sizing:border-box;
     }
-
-    input:focus,
-    textarea:focus {
-      outline: none;
-      border-color: #0ea5e9;
-      box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
+    input:focus, textarea:focus {
+      outline:none;
+      border-color: var(--accent-vibrant-blue);
+      box-shadow: 0 0 0 3px rgba(69,98,217,0.2);
     }
 
     button {
-      padding: 10px 0;
-      background-color: #065f46;
-      color: white;
-      font-size: 0.95rem;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: 0.3s;
       width: fit-content;
+      padding:10px 20px;
+      border:none;
+      border-radius:var(--border-radius-md);
+      background-color: var(--accent-vibrant-blue);
+      color: #fff;
+      cursor:pointer;
+      font-weight:600;
+      transition: all var(--transition-speed);
     }
-
     button:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
+      background-color:#5d75e6;
+      transform:translateY(-1px);
     }
 
-    ul {
-      list-style: none;
-      padding-left: 0;
-    }
-
+    ul { list-style:none; padding-left:0; }
     li {
-      background-color: #f1f5f9;
-      border-radius: 12px;
-      padding: 15px 20px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-      font-size: 0.9rem;
-      position: relative;
+      background: #fcfdfe;
+      border-radius: var(--border-radius-md);
+      padding:15px 20px;
+      margin-bottom:15px;
+      box-shadow:0 4px 10px rgba(69,98,217,0.08);
+      position:relative;
+      border-left: 4px solid var(--accent-vibrant-blue);
     }
+    li strong { font-size:1rem; color: var(--text-dark); }
+    li a { color: var(--accent-vibrant-blue); text-decoration:none; font-weight:500; }
+    li a:hover { text-decoration: underline; }
 
-    li strong {
-      font-size: 1rem;
-      color: #0f172a;
-    }
-
-    li a {
-      color: #0ea5e9;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    li a:hover {
-      text-decoration: underline;
-    }
-
-    .submission-form {
-      margin-top: 10px;
-    }
+    .submission-form { margin-top: 10px; }
 
     .back-link {
-      display: inline-block;
-      margin-top: 20px;
-      color: #0ea5e9;
-      font-weight: 500;
-      text-decoration: none;
-      font-size: 0.95rem;
+      display:inline-block;
+      margin-top:20px;
+      color: var(--accent-vibrant-blue);
+      font-weight:500;
+      text-decoration:none;
+      font-size:0.95rem;
     }
+    .back-link:hover { text-decoration:underline; }
 
-    .back-link:hover {
-      text-decoration: underline;
-    }
+    /* Material Modal */
+    #materialModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; z-index:1000; }
+    #materialModalContent { position:relative; width:80%; max-height:80%; }
+    #closeMaterialModal { position:absolute; top:-30px; right:-30px; font-size:3rem; color:white; cursor:pointer; transition: color 0.2s; }
+    #closeMaterialModal:hover { color: var(--accent-coral-pink); }
+    #materialFrame { width:100%; height:100%; border:none; border-radius: var(--border-radius-md); background:white; }
 
-    @media (max-width: 700px) {
-      .container {
-        padding: 25px 20px;
-      }
+    @media(max-width:900px){
+      .dashboard-layout{flex-direction:column; padding:0 20px; margin:20px auto;}
+      .sidebar-panel{flex:1 1 auto; width:auto; padding:20px;}
+      .nav-buttons-container{flex-direction:row; flex-wrap:wrap; gap:8px;}
+      a.dashboard-button{flex:1 1 45%;}
+      .main-content-panel{padding:20px;}
+      header{padding:15px 20px;}
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Welcome to <span>InnovateEd</span></h1>
-    <p>📘 Learn. Grow. Succeed.</p>
-  </header>
+<header>
+  <h1>Innovate<span>Ed</span></h1>
+  <a class="home-button" href="/home">🏠 Home</a>
+</header>
 
-  <div class="container">
+<div class="dashboard-layout">
+  <div class="sidebar-panel">
+    <h2>Course Tools</h2>
+    <div class="nav-buttons-container">
+      <a class="dashboard-button" href="/course/<%= course.id %>">Curriculum</a>
+      <a class="dashboard-button active" href="/course/<%= course.id %>/assignments?role=<%= user.role %>&userId=<%= user.id %>">Assignments</a>
+      <a class="dashboard-button" href="/course/<%= course.id %>/materials">Materials</a>
+      <a class="dashboard-button" href="/course/<%= course.id %>/forum">Forum</a>
+      <% if(user.role==='Teacher'){ %>
+                <a class="dashboard-button" href="/course/<%= course.id %>/quiz/create">Practice</a>
+            <% } else { %>
+                <a class="dashboard-button" href="/practice/<%= course.id %>">Practice</a>
+            <% } %>
+    </div>
+  </div>
+
+  <div class="main-content-panel">
     <h1><%= course.title %> - Assignments</h1>
     <p>Welcome, <%= user.full_name %> (<%= role %>)</p>
 
-    <% if (role === 'Teacher') { %>
-      <h2>Create New Assignment</h2>
-      <form action="/course/<%= course.id %>/assignments/create" method="POST" enctype="multipart/form-data">
-        <label>Title:</label>
-        <input type="text" name="title" required>
+    <% if(role==='Teacher'){ %>
+  <button id="toggleAssignmentForm" style="
+    padding:10px 18px; 
+    background-color: var(--accent-vibrant-blue); 
+    color:white; 
+    border:none; 
+    border-radius:25px; 
+    cursor:pointer; 
+    font-weight:600;
+    margin-bottom:20px;
+    transition:0.3s;
+  ">
+    + Create New Assignment
+  </button>
 
-        <label>Description:</label>
-        <textarea name="description" rows="4" required></textarea>
+  <div id="assignmentFormContainer" style="display:none;">
+    <form action="/course/<%= course.id %>/assignments/create" method="POST" enctype="multipart/form-data">
+      <label>Title:</label>
+      <input type="text" name="title" required>
+      <label>Description:</label>
+      <textarea name="description" rows="4" required></textarea>
+      <label>Due Date:</label>
+      <input type="date" name="due_date" required>
+      <label>Points (0-100):</label>
+      <input type="number" name="points" min="0" max="100" required>
+      <label>Upload File (PDF/DOC/DOCX):</label>
+      <input type="file" name="file" accept=".pdf,.doc,.docx">
+      <button type="submit">Create Assignment</button>
+    </form>
+  </div>
 
-        <label>Due Date:</label>
-        <input type="date" name="due_date" required>
+  <script>
+    const toggleBtn = document.getElementById('toggleAssignmentForm');
+    const formContainer = document.getElementById('assignmentFormContainer');
 
-        <label>Points (0-100):</label>
-        <input type="number" name="points" min="0" max="100" required>
+    toggleBtn.addEventListener('click', () => {
+      if(formContainer.style.display === 'none'){
+        formContainer.style.display = 'block';
+        toggleBtn.textContent = '− Hide Assignment Form';
+      } else {
+        formContainer.style.display = 'none';
+        toggleBtn.textContent = '+ Create New Assignment';
+      }
+    });
+  </script>
+<% } %>
 
-        <label>Upload File (PDF/DOC/DOCX):</label>
-        <input type="file" name="file" accept=".pdf,.doc,.docx">
-
-        <button type="submit">Create Assignment</button>
-      </form>
-    <% } %>
 
     <h2>All Assignments</h2>
 
-    <% if (assignments.length === 0) { %>
+    <% if(assignments.length===0){ %>
       <p>No assignments yet.</p>
     <% } else { %>
       <ul>
-        <% assignments.forEach(a => { %>
+        <% assignments.forEach(a=>{ %>
           <li>
             <strong><%= a.title %></strong> - Due: <%= a.due_date ? a.due_date.toISOString().slice(0,10) : 'N/A' %>
             <p><%= a.description %></p>
             <p>Points: <%= a.points %></p>
 
-            <% if (a.file_path) { %>
-              <a href="/uploads/<%= a.file_path %>" target="_blank">Download Assignment</a><br>
+            <% if(a.file_path){ %>
+              <% const ext=a.file_path.split('.').pop().toLowerCase(); %>
+              <% if(ext==='pdf'){ %>
+                <a href="#" onclick="showMaterial('/uploads/<%= a.file_path %>')">View PDF</a> |
+              <% } else if(['doc','docx','ppt','pptx'].includes(ext)){ %>
+                <a href="#" onclick="showMaterialMS('/uploads/<%= a.file_path %>')">View</a> |
+              <% } %>
+              <a href="/uploads/<%= a.file_path %>" target="_blank">Download</a><br>
             <% } %>
 
-            <% if (role === 'Teacher') { %>
+            <% if(role==='Teacher'){ %>
               <a href="/course/<%= course.id %>/assignments/<%= a.id %>/submissions">View Submissions</a>
             <% } %>
 
-            <% if (role === 'Student') { %>
-              <% const submitted = a.submissions?.find(s => s.student_id === user.id); %>
-              <% if (!submitted) { %>
-                <form class="submission-form" action="/assignments/<%= a.id %>/submit" method="POST" enctype="multipart/form-data">
-                  <input type="hidden" name="courseId" value="<%= course.id %>">
-                  <input type="file" name="file" required>
-                  <button type="submit">Submit Assignment</button>
-                </form>
-              <% } else { %>
-                <!-- Top-right "Your Submission" button -->
-                <a href="/uploads/<%= submitted.file_path %>" target="_blank" 
-                   style="position: absolute; top: 15px; right: 20px; background-color:#0ea5e9; color:white; padding:6px 12px; border-radius:20px; text-decoration:none; font-size:0.85rem;">
-                   Your Submission
-                </a>
+            <% if(role==='Student'){ %>
+  <% const submitted=a.submissions?.find(s=>s.student_id===user.id); %>
+  <% if(!submitted){ %>
+    <form class="submission-form" action="/assignments/<%= a.id %>/submit" method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="courseId" value="<%= course.id %>">
+      <input type="file" name="file" required>
+      <button type="submit">Submit Assignment</button>
+    </form>
+  <% } else { %>
+    <a href="/uploads/<%= submitted.file_path %>" target="_blank" 
+      style="position:absolute; top:15px; right:20px; background-color:var(--accent-vibrant-blue); color:white; padding:6px 12px; border-radius:20px; text-decoration:none; font-size:0.85rem;">
+      Your Submission
+    </a>
+    <% if(submitted.grade!=null){ %>
+      <p><strong>Grade:</strong> <%= submitted.grade %> / <%= a.points %></p>
+      <% if(submitted.feedback){ %>
+        <p><strong>Feedback:</strong> <%= submitted.feedback %></p>
+      <% } %>
+    <% } else { %>
+      <p>Your submission has not been graded yet.</p>
+    <% } %>
+  <% } %>
+<% } %>
 
-                <% if(submitted.grade != null){ %>
-                  <p><strong>Grade:</strong> <%= submitted.grade %> / <%= a.points %></p>
-                  <% if(submitted.feedback){ %>
-                    <p><strong>Feedback:</strong> <%= submitted.feedback %></p>
-                  <% } %>
-                <% } else { %>
-                  <p>Your submission has not been graded yet.</p>
-                <% } %>
-              <% } %>
-            <% } %>
           </li>
         <% }) %>
       </ul>
     <% } %>
 
-    <a class="back-link" href="/home">Back to Home</a>
+
   </div>
+</div>
+
+<!-- Material Modal -->
+<div id="materialModal">
+  <div id="materialModalContent">
+    <span id="closeMaterialModal">&times;</span>
+    <iframe id="materialFrame"></iframe>
+  </div>
+</div>
+
+<script>
+  const materialModal = document.getElementById('materialModal');
+  const materialFrame = document.getElementById('materialFrame');
+  const closeMaterialModal = document.getElementById('closeMaterialModal');
+
+  function showMaterial(src){
+    materialFrame.src = src;
+    materialModal.style.display = 'flex';
+  }
+
+  function showMaterialMS(src){
+    const url = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(window.location.origin + src);
+    materialFrame.src = url;
+    materialModal.style.display = 'flex';
+  }
+
+  closeMaterialModal.addEventListener('click', ()=>{
+    materialModal.style.display = 'none';
+    materialFrame.src='';
+  });
+
+  materialModal.addEventListener('click',(e)=>{
+    if(e.target===materialModal){
+      materialModal.style.display='none';
+      materialFrame.src='';
+    }
+  });
+</script>
 
 </body>
 </html>

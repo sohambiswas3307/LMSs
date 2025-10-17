@@ -4,231 +4,219 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= assignment.title %> - Submissions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-light: #f7f9fc;
+      --white: #ffffff;
+      --text-dark: #2a3344;
+      --text-medium: #6c757d;
+      --accent-blue: #4562d9;
+      --accent-pink: #f07b78;
+      --shadow-soft: 0 8px 20px rgba(0,0,0,0.08);
+      --border-radius-lg: 18px;
+      --border-radius-md: 12px;
+      --transition-speed: 0.3s;
+      --border-color: #e9eef5;
+    }
+
     body {
       font-family: 'Poppins', sans-serif;
-      background-color: #f8fafc;
-      margin: 0;
-      padding: 0;
-      color: #1e293b;
+      background-color: var(--bg-light);
+      margin:0;
+      padding:0;
+      color: var(--text-dark);
     }
 
     header {
-      background-color: white;
-      padding: 20px 60px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      background: var(--white);
+      padding: 15px 40px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      box-shadow:0 2px 4px rgba(0,0,0,0.05);
+      border-bottom: 1px solid var(--border-color);
     }
 
     header h1 {
-      font-size: 1.6rem;
-      font-weight: 600;
-      color: #0f172a;
+      font-size:1.6rem;
+      font-weight:700;
+      margin:0;
     }
-
-    header span {
-      color: #0ea5e9;
-      font-weight: 700;
-    }
+    header span { color: var(--accent-blue); }
 
     .container {
       max-width: 900px;
-      margin: 60px auto;
-      background: #ffffff;
+      margin: 40px auto;
+      background: var(--white);
       padding: 40px 50px;
-      border-radius: 16px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-soft);
     }
 
     h1 {
-      font-size: 1.8rem;
-      color: #0f172a;
-      margin-bottom: 10px;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-dark);
       text-align: center;
+      margin-bottom: 10px;
     }
 
     p {
       font-size: 0.95rem;
-      color: #475569;
-      margin-bottom: 15px;
+      color: var(--text-medium);
       text-align: center;
+      margin-bottom: 20px;
     }
 
-    ul {
-      list-style: none;
-      padding-left: 0;
-      margin-top: 20px;
-    }
+    ul { list-style:none; padding-left:0; margin-top:20px; }
 
     .submission-card {
-      background-color: #f1f5f9;
-      border-radius: 12px;
+      background: #f0f3fa;
+      border-radius: var(--border-radius-md);
       padding: 15px 20px;
       margin-bottom: 15px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-      font-size: 0.9rem;
+      box-shadow:0 4px 10px rgba(69,98,217,0.08);
+      font-size: 0.95rem;
+      border-left: 4px solid var(--accent-blue);
     }
 
     .submission-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      cursor:pointer;
     }
 
-    .submission-header strong {
-      font-size: 1rem;
-      color: #0f172a;
-    }
+    .submission-header strong { color: var(--text-dark); }
 
     .submission-header button {
-      background-color: #0ea5e9;
-      color: white;
-      border: none;
-      padding: 5px 12px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: 0.3s;
+      background-color: var(--accent-blue);
+      color: var(--white);
+      border:none;
+      padding:6px 14px;
+      border-radius:25px;
+      cursor:pointer;
+      font-size:0.85rem;
+      font-weight:500;
+      transition: all var(--transition-speed);
     }
-
     .submission-header button:hover {
-      opacity: 0.9;
+      background-color: #5d75e6;
       transform: translateY(-1px);
     }
 
     .submission-details {
-      display: none;
-      margin-top: 12px;
-      border-top: 1px solid #cbd5e1;
-      padding-top: 12px;
+      display:none;
+      margin-top:12px;
+      border-top:1px solid var(--border-color);
+      padding-top:12px;
     }
 
     .submission-details a {
-      color: #0ea5e9;
-      text-decoration: none;
-      font-weight: 500;
+      color: var(--accent-blue);
+      text-decoration:none;
+      font-weight:500;
     }
+    .submission-details a:hover { text-decoration: underline; }
 
-    .submission-details a:hover {
-      text-decoration: underline;
+    form { display:flex; flex-direction:column; gap:12px; margin-top:10px; }
+
+    input[type="number"], textarea {
+      padding:12px;
+      border-radius: var(--border-radius-md);
+      border:1px solid #c8d3e4;
+      font-size:0.95rem;
+      width:100%;
+      box-sizing:border-box;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    input[type="number"],
-    textarea {
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid #cbd5e1;
-      font-size: 0.95rem;
-      width: 100%;
-      transition: border-color 0.3s;
-    }
-
-    input:focus,
-    textarea:focus {
-      outline: none;
-      border-color: #0ea5e9;
-      box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
+    input:focus, textarea:focus {
+      outline:none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(69,98,217,0.15);
     }
 
     button.submit-btn {
-      padding: 10px 0;
-      background-color: #065f46;
-      color: white;
-      font-size: 0.95rem;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
       width: fit-content;
-      transition: 0.3s;
+      padding:10px 20px;
+      background-color: var(--accent-pink);
+      color: var(--white);
+      border:none;
+      border-radius: var(--border-radius-md);
+      font-weight:600;
+      cursor:pointer;
+      transition: all var(--transition-speed);
     }
-
     button.submit-btn:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
+      background-color:#f36c66;
+      transform: translateY(-1px);
     }
 
     .back-link {
-      display: inline-block;
-      margin-top: 25px;
-      color: #0ea5e9;
-      font-weight: 500;
-      text-decoration: none;
-      font-size: 0.95rem;
-      text-align: center;
+      display:inline-block;
+      margin-top:25px;
+      color: var(--accent-blue);
+      font-weight:500;
+      text-decoration:none;
     }
+    .back-link:hover { text-decoration:underline; }
 
-    .back-link:hover {
-      text-decoration: underline;
-    }
-
-    @media (max-width: 700px) {
-      .container {
-        padding: 25px 20px;
-      }
+    @media(max-width:700px){
+      .container { padding:25px 20px; }
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Welcome to <span>InnovateEd</span></h1>
-    <p>📘 Learn. Grow. Succeed.</p>
-  </header>
+<header>
+  <h1>Submissions <span>Dashboard</span></h1>
+</header>
 
-  <div class="container">
-    <h1>Submissions for: <%= assignment.title %></h1>
-    <p>Max Points: <%= assignment.points %></p>
+<div class="container">
+  <h1><%= assignment.title %></h1>
+  <p>Max Points: <%= assignment.points %></p>
 
-    <% if(submissions.length === 0){ %>
-      <p>No submissions yet.</p>
-    <% } else { %>
-      <ul>
-        <% submissions.forEach(s => { %>
-          <li class="submission-card">
-            <div class="submission-header" onclick="toggleDetails(this)">
-              <strong>Student: <%= s.student_name %></strong>
-              <button>View / Grade</button>
-            </div>
+  <% if(submissions.length === 0){ %>
+    <p>No submissions yet.</p>
+  <% } else { %>
+    <ul>
+      <% submissions.forEach(s => { %>
+        <li class="submission-card">
+          <div class="submission-header" onclick="toggleDetails(this)">
+            <strong>Student: <%= s.student_name %></strong>
+            <button>View / Grade</button>
+          </div>
 
-            <div class="submission-details">
-              <% if(s.file_path){ %>
-                <p><a href="/uploads/<%= s.file_path %>" target="_blank">Download Submission</a></p>
-              <% } %>
+          <div class="submission-details">
+            <% if(s.file_path){ %>
+              <p><a href="/uploads/<%= s.file_path %>" target="_blank">Download Submission</a></p>
+            <% } %>
 
-              <form action="/assignments/<%= assignment.id %>/submissions/<%= s.id %>/grade" method="POST">
-                <label>Grade (0 - <%= assignment.points %>):</label>
-                <input type="number" name="grade" min="0" max="<%= assignment.points %>" value="<%= s.grade ?? '' %>" required>
+            <form action="/assignments/<%= assignment.id %>/submissions/<%= s.id %>/grade" method="POST">
+              <label>Grade (0 - <%= assignment.points %>)</label>
+              <input type="number" name="grade" min="0" max="<%= assignment.points %>" value="<%= s.grade ?? '' %>" required>
 
-                <label>Feedback (optional):</label>
-                <textarea name="feedback"><%= s.feedback ?? '' %></textarea>
+              <label>Feedback (optional)</label>
+              <textarea name="feedback"><%= s.feedback ?? '' %></textarea>
 
-                <button type="submit" class="submit-btn">Save Grade</button>
-              </form>
-            </div>
-          </li>
-        <% }) %>
-      </ul>
-    <% } %>
+              <button type="submit" class="submit-btn">Save Grade</button>
+            </form>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
 
-    <a class="back-link" href="/course/<%= courseId %>/assignments">Back to Assignments</a>
-  </div>
+  <a class="back-link" href="/course/<%= courseId %>/assignments">← Back to Assignments</a>
+</div>
 
-  <script>
-    function toggleDetails(header) {
-      const details = header.nextElementSibling;
-      details.style.display = details.style.display === 'block' ? 'none' : 'block';
-    }
-  </script>
+<script>
+  function toggleDetails(header) {
+    const details = header.nextElementSibling;
+    details.style.display = details.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
 
 </body>
 </html>

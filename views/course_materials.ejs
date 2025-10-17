@@ -1,42 +1,394 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Course Materials</title>
-  <style>
-    body { font-family: 'Poppins', sans-serif; background: #f8fafc; color: #1e293b; padding: 40px; }
-    h1 { color: #0f172a; }
-    ul { list-style: none; padding: 0; }
-    li { margin: 10px 0; }
-    a { color: #0ea5e9; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    form { margin-top: 20px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= course.title %> - Materials | InnovateEd</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    /* --- Aesthetic Variables (Modern, Clean, Light Theme) --- */
+    :root {
+        --bg-light: #f7f9fc; /* Soft light background (desaturated purple/blue feel) */
+        --white: #ffffff;
+        --text-dark: #2a3344; /* Dark gray for high contrast text */
+        --text-medium: #6c757d; 
+        --accent-vibrant-blue: #4562d9; /* Vibrant medium blue (for active buttons, links) */
+        --accent-coral-pink: #f07b78; /* Soft pink/coral (for secondary accents/hover) */
+        --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.08);
+        --border-radius-lg: 18px; /* Large rounded corners for panels */
+        --border-radius-md: 12px;
+        --transition-speed: 0.3s;
+        --border-color: #e9eef5; 
+    }
+
+    body { 
+        font-family: 'Poppins', sans-serif; 
+        background-color: var(--bg-light); 
+        margin:0; 
+        padding:0; 
+        color:var(--text-dark); 
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+    }
+
+    /* --- Header --- */
+    header { 
+        background: var(--white); 
+        padding: 15px 40px; 
+        display:flex; 
+        justify-content:space-between; 
+        align-items:center; 
+        box-shadow:0 2px 4px rgba(0, 0, 0, 0.05); 
+        border-bottom: 1px solid var(--border-color);
+    }
+    header h1 { 
+        font-size:1.6rem; 
+        font-weight:700; 
+        color:var(--text-dark); 
+        margin: 0;
+    }
+    header span { 
+        color:var(--accent-vibrant-blue); 
+        font-weight:700; 
+    }
+
+    /* --- Dashboard Container --- */
+    .dashboard-layout {
+        display: flex;
+        max-width: 1400px;
+        margin: 40px auto;
+        padding: 0 40px;
+        gap: 30px;
+    }
+
+    /* --- Left Sidebar (Dashboard) --- */
+    .sidebar-panel {
+        flex: 0 0 240px; 
+        background: var(--white);
+        padding: 30px 20px;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-soft);
+        align-self: flex-start; 
+    }
+
+    /* --- Main Content Area --- */
+    .main-content-panel {
+        flex: 1; 
+        background: var(--white);
+        padding: 40px 50px;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-soft);
+    }
+    .main-content-panel > h1 {
+        font-size: 2.2rem;
+        color: var(--text-dark); 
+        margin-bottom: 20px; 
+        font-weight: 700;
+    }
+
+    /* --- Navigation Buttons (Sidebar) --- */
+    .sidebar-panel h2 {
+        font-size: 1.2rem;
+        color: var(--text-dark);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+    }
+    .nav-buttons-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    a.dashboard-button { 
+        display: flex;
+        align-items: center;
+        padding:12px 15px; 
+        background-color: #f0f3fa; 
+        color:var(--text-dark); 
+        font-size:0.95rem; 
+        font-weight:500; 
+        text-decoration:none; 
+        border-radius:var(--border-radius-md); 
+        transition: all var(--transition-speed); 
+        border: 1px solid var(--border-color);
+    }
+    a.dashboard-button:hover { 
+        background-color: #e0e5ff; 
+        color: var(--accent-vibrant-blue);
+        transform: translateX(2px); 
+    }
+    a.dashboard-button.active {
+         background-color: var(--accent-vibrant-blue);
+         color: var(--white);
+         font-weight: 600;
+         border-color: var(--accent-vibrant-blue);
+         box-shadow: 0 4px 8px rgba(69, 98, 217, 0.3);
+    }
+
+    /* --- Home Button (Header) --- */
+    .home-button {
+        padding: 8px 18px;
+        background-color: var(--accent-vibrant-blue);
+        color: var(--white);
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        border-radius: 25px;
+        transition: all var(--transition-speed);
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        box-shadow: 0 2px 5px rgba(69, 98, 217, 0.3);
+    }
+    .home-button:hover {
+        background-color: #5d75e6; 
+        transform: translateY(-1px);
+    }
+
+    /* --- Study Materials List Styles --- */
+    h2 { 
+        font-size:1.6rem; 
+        margin-bottom:15px; 
+        color:var(--text-dark); 
+        border-bottom:2px solid var(--border-color); 
+        padding-bottom:10px; 
+        font-weight: 600; 
+    }
+    .material { 
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding:15px 20px; 
+        border:1px solid #d4e0ff; 
+        border-radius:var(--border-radius-md); 
+        margin-bottom:15px; 
+        background:#f8faff; 
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        transition: box-shadow 0.2s;
+    }
+    .material:hover {
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    .material strong {
+        font-weight: 600;
+        color: var(--text-dark);
+        flex-grow: 1;
+        margin-right: 20px;
+    }
+    .material a { 
+        color:var(--accent-vibrant-blue); 
+        text-decoration:none; 
+        font-weight:500; 
+        padding: 0 10px;
+        transition: color 0.2s;
+    }
+    .material a:hover { 
+        text-decoration:underline; 
+        color: #5d75e6;
+    }
+    .material .actions {
+        display: flex;
+        gap: 5px;
+    }
+    .no-materials {
+        padding: 10px 0;
+        color: var(--text-medium);
+    }
+
+    /* --- Teacher Upload Form Styles --- */
+    .upload-toggle-btn { 
+        background:var(--accent-vibrant-blue); 
+        color:white; 
+        border:none; 
+        border-radius:var(--border-radius-md); 
+        padding:12px 25px; 
+        cursor:pointer; 
+        font-weight:600; 
+        transition:var(--transition-speed);
+        display: inline-block; /* Make it look like a button */
+        margin-bottom: 20px;
+    } 
+    .upload-toggle-btn:hover { 
+        background:#5d75e6; 
+        transform:translateY(-1px);
+        box-shadow: 0 4px 8px rgba(69, 98, 217, 0.3);
+    } 
+    .upload-form { 
+        display:none; 
+        flex-direction:column; 
+        gap:12px; 
+        margin:15px 0 30px 0;
+        padding:25px; 
+        background:#f0f3fa; 
+        border:1px solid #d4e0ff; 
+        border-radius:var(--border-radius-md);
+    }
+    .upload-form h3 {
+        font-size: 1.4rem;
+        color: var(--accent-vibrant-blue);
+        margin: 0 0 10px 0;
+        font-weight: 600;
+        border-bottom: 1px dashed var(--accent-vibrant-blue);
+        padding-bottom: 10px;
+    }
+    .upload-form input, .upload-form button { 
+        padding:12px; 
+        font-size:0.95rem; 
+        border-radius:8px; 
+        border:1px solid #c8d3e4;
+        box-sizing: border-box; 
+    }
+    .upload-form input:focus {
+        outline: none;
+        border-color: var(--accent-vibrant-blue);
+        box-shadow: 0 0 0 3px rgba(69, 98, 217, 0.2);
+    }
+    .upload-form button { 
+        background:var(--accent-vibrant-blue); 
+        color:white; 
+        border:none; 
+        border-radius:var(--border-radius-md); 
+        cursor:pointer; 
+        transition:var(--transition-speed);
+    } 
+    .upload-form button:hover { 
+        background:#5d75e6; 
+        transform:translateY(-1px);
+    } 
+    
+    .back-link { 
+        display:inline-block; 
+        margin-top:20px; 
+        background-color: var(--text-medium); /* Use a neutral color for "back" */
+        color: var(--white);
+        font-weight:500; 
+        text-decoration:none; 
+        font-size:0.95rem;
+        padding: 10px 20px;
+        border-radius: var(--border-radius-md);
+        transition: all var(--transition-speed);
+    }
+    .back-link:hover { 
+        background-color: #5a6268; 
+        text-decoration:none;
+    }
+    
+    /* Media Queries for smaller screens */
+    @media (max-width: 900px) {
+        .dashboard-layout {
+            flex-direction: column;
+            padding: 0 20px;
+            margin: 20px auto;
+            gap: 20px;
+        }
+        .sidebar-panel {
+            flex: 1 1 auto;
+            width: auto;
+            padding: 20px;
+        }
+        .nav-buttons-container {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        a.dashboard-button {
+            flex: 1 1 45%;
+        }
+        .main-content-panel {
+            padding: 20px;
+        }
+        header {
+            padding: 15px 20px;
+        }
+    }
+
+</style>
+<script>
+function showMaterial(filePath) {
+    const ext = filePath.split('.').pop().toLowerCase();
+    const fullUrl = window.location.origin + filePath;
+    if(ext === 'pdf') {
+        window.open(fullUrl, '_blank');
+    } else if(['doc','docx','ppt','pptx'].includes(ext)) {
+        // Microsoft Office Online Viewer
+        const officeUrl = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(fullUrl);
+        window.open(officeUrl, '_blank');
+    } else if(['jpg','jpeg','png','gif'].includes(ext)) {
+        // For images, just open the file directly
+        window.open(fullUrl, '_blank');
+    } else { alert('Preview not available'); }
+}
+
+function toggleUploadForm() {
+    const form = document.getElementById('uploadForm');
+    const button = document.querySelector('.upload-toggle-btn');
+    
+    if (form.style.display === 'flex') {
+        form.style.display = 'none';
+        button.textContent = '+ Upload New Material';
+    } else {
+        form.style.display = 'flex';
+        button.textContent = '— Hide Upload Form';
+    }
+}
+</script>
 </head>
 <body>
-  <h1>Course Materials</h1>
 
-  <ul>
-    <% if(materials.length === 0){ %>
-      <li>No materials uploaded yet.</li>
-    <% } %>
+<header>
+    <h1>Innovate<span>Ed</span></h1>
+    <a class="home-button" href="/home">🏠 Home</a>
+</header>
 
-    <% materials.forEach(m => { %>
-      <li>
-        <a href="/uploads/<%= m.file_path %>" target="_blank"><%= m.file_name %></a>
-      </li>
-    <% }) %>
-  </ul>
+<div class="dashboard-layout">
+    <div class="sidebar-panel">
+        <h2>Course Tools</h2>
+        <div class="nav-buttons-container">
+            <a class="dashboard-button" href="/course/<%= course.id %>">Curriculum</a>
+            <a class="dashboard-button" href="/course/<%= course.id %>/assignments?role=<%= user.role %>&userId=<%= user.id %>">Go to Assignments</a>
+            <a class="dashboard-button active" href="/course/<%= course.id %>/materials">Materials</a>
+            <a class="dashboard-button" href="/course/<%= course.id %>/forum">Discussion Forum</a>
+            <% if(user.role==='Teacher'){ %>
+                <a class="dashboard-button" href="/course/<%= course.id %>/quiz/create">Practice</a>
+            <% } else { %>
+                <a class="dashboard-button" href="/practice/<%= course.id %>">Practice</a>
+            <% } %>
+        </div>
+    </div>
 
-  <% if(user.role === 'Teacher'){ %>
-    <form action="/course/<%= courseId %>/materials/upload" method="POST" enctype="multipart/form-data">
-      <input type="file" name="file" required>
-      <button type="submit">Upload Material</button>
-    </form>
-  <% } %>
+    <div class="main-content-panel">
+        <h1><%= course.title %></h1>
+        <h2>Study Materials</h2>
 
-  <br>
-  <a href="/course/<%= courseId %>">Back to Course</a>
+        <% if (user && user.role === 'Teacher') { %>
+            <button class="upload-toggle-btn" onclick="toggleUploadForm()">+ Upload New Material</button>
+            <form id="uploadForm" class="upload-form" action="/course/<%= course.id %>/materials/upload" method="POST" enctype="multipart/form-data">
+                <h3>Upload New Material</h3>
+                <input type="text" name="material_title" placeholder="File Name (e.g., Unit 1 Notes)" required>
+                <input type="file" name="material_file" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.gif" required>
+                <button type="submit">Upload Material</button>
+            </form>
+        <% } %>
+
+        <% if(materials && materials.length) { %>
+            <% materials.forEach(material => { %>
+                <div class="material">
+                    <strong><%= material.file_name %></strong>
+                    <div class="actions">
+                        <a href="#" onclick="showMaterial('/uploads/<%= material.file_path %>')">View</a> |
+                        <a href="/uploads/<%= material.file_path %>" target="_blank" download>Download</a>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p class="no-materials">No materials uploaded yet.</p>
+        <% } %>
+    </div>
+
+</div>
+
 </body>
 </html>

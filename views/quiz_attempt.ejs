@@ -1,82 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title><%= quiz.title %> - Attempt</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    .question { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-    .blurred { filter: blur(10px); pointer-events: none; user-select: none; }
-    #timer { position: fixed; top: 10px; right: 20px; font-size: 18px; font-weight: bold; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= quiz.title %> | InnovateEd</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-light: #f8fafc;
+    --white: #ffffff;
+    --text-dark: #1e293b;
+    --text-medium: #475569;
+    --accent-blue: #0ea5e9;
+    --accent-light-blue: #e0f2fe;
+    --shadow-soft: 0 4px 15px rgba(0,0,0,0.05);
+    --border-radius-lg: 16px;
+    --border-radius-md: 12px;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-light);
+    margin: 0;
+    padding: 0;
+    color: var(--text-dark);
+  }
+
+  header {
+    background-color: var(--white);
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  header span {
+    color: var(--accent-blue);
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: var(--white);
+    padding: 40px 50px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-soft);
+    position: relative;
+  }
+
+  .back-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: var(--accent-blue);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s;
+  }
+  .back-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  #timer {
+    text-align: right;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .question {
+    background: var(--accent-light-blue);
+    padding: 20px;
+    border-radius: var(--border-radius-md);
+    margin-bottom: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .question:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+  }
+
+  .blurred {
+    filter: blur(10px);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  label {
+    display: block;
+    margin: 8px 0;
+    font-weight: 500;
+  }
+
+  #startBtn, #submitBtn {
+    background-color: var(--accent-blue);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-weight: 600;
+    border-radius: 25px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: 0.3s;
+  }
+
+  #startBtn:hover, #submitBtn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  #submitBtn:disabled {
+    background-color: #94cdfc;
+    cursor: not-allowed;
+  }
+</style>
 </head>
 <body>
 
-<h1><%= quiz.title %></h1>
-<div id="timer">Time: 0s</div>
+<header>
+  <h1>Quiz: <span><%= quiz.title %></span></h1>
+  <a class="back-btn" href="/practice/<%= quiz.course_id %>">← Back to Quizzes</a>
+</header>
 
-<button id="startBtn">Start Quiz</button>
+<div class="container">
+  <div id="timer">Time: 0s</div>
+  <button id="startBtn">Start Quiz</button>
 
-<form id="quizForm" action="/practice/quiz/<%= quiz.id %>/submit" method="post">
-  <% questions.forEach((q, idx) => { %>
-    <div class="question blurred" data-question-id="<%= q.id %>">
-      <p><strong>Q<%= idx+1 %>:</strong> <%= q.question_text %></p>
-      <label>
-        <input type="radio" name="<%= q.id %>" value="A"> A. <%= q.option_a %>
-      </label><br>
-      <label>
-        <input type="radio" name="<%= q.id %>" value="B"> B. <%= q.option_b %>
-      </label><br>
-      <label>
-        <input type="radio" name="<%= q.id %>" value="C"> C. <%= q.option_c %>
-      </label><br>
-      <label>
-        <input type="radio" name="<%= q.id %>" value="D"> D. <%= q.option_d %>
-      </label>
-    </div>
-  <% }) %>
-  <input type="hidden" name="timeTaken" id="timeTaken" value="0">
-  <button type="submit" id="submitBtn" disabled>Submit Quiz</button>
-</form>
+  <form id="quizForm" action="/practice/quiz/<%= quiz.id %>/submit" method="POST">
+    <% questions.forEach((q, idx) => { %>
+      <div class="question blurred" data-question-id="<%= q.id %>">
+        <p><strong>Q<%= idx+1 %>:</strong> <%= q.question_text %></p>
+        <label><input type="radio" name="<%= q.id %>" value="A"> A. <%= q.option_a %></label>
+        <label><input type="radio" name="<%= q.id %>" value="B"> B. <%= q.option_b %></label>
+        <label><input type="radio" name="<%= q.id %>" value="C"> C. <%= q.option_c %></label>
+        <label><input type="radio" name="<%= q.id %>" value="D"> D. <%= q.option_d %></label>
+      </div>
+    <% }) %>
+    <input type="hidden" name="timeTaken" id="timeTaken" value="0">
+    <button type="submit" id="submitBtn" disabled>Submit Quiz</button>
+  </form>
+</div>
 
 <script>
-  let timer = 0;
-  let timerInterval = null;
-  const timerDisplay = document.getElementById('timer');
-  const startBtn = document.getElementById('startBtn');
-  const submitBtn = document.getElementById('submitBtn');
-  const questionsDivs = document.querySelectorAll('.question');
-  const timeTakenInput = document.getElementById('timeTaken');
+let timer = 0;
+let timerInterval = null;
+const timerDisplay = document.getElementById('timer');
+const startBtn = document.getElementById('startBtn');
+const submitBtn = document.getElementById('submitBtn');
+const questionsDivs = document.querySelectorAll('.question');
+const timeTakenInput = document.getElementById('timeTaken');
 
-  startBtn.addEventListener('click', async () => {
-    // Start timer
-    timer = 0;
-    timerDisplay.textContent = 'Time: 0s';
-    if(timerInterval) clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-      timer++;
-      timerDisplay.textContent = `Time: ${timer}s`;
-      timeTakenInput.value = timer;
-    }, 1000);
-
-    // Remove blur
-    questionsDivs.forEach(q => q.classList.remove('blurred'));
-
-    // Enable submit
-    submitBtn.disabled = false;
-
-    // Disable start button
-    startBtn.disabled = true;
-
-    // Notify server of quiz start
-    await fetch(`/practice/quiz/<%= quiz.id %>/start`, { method: 'POST' });
-  });
-
-  // Stop timer on submit
-  document.getElementById('quizForm').addEventListener('submit', () => {
-    clearInterval(timerInterval);
+startBtn.addEventListener('click', async () => {
+  timer = 0;
+  timerDisplay.textContent = 'Time: 0s';
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timer++;
+    timerDisplay.textContent = `Time: ${timer}s`;
     timeTakenInput.value = timer;
-  });
+  }, 1000);
+
+  questionsDivs.forEach(q => q.classList.remove('blurred'));
+  submitBtn.disabled = false;
+  startBtn.disabled = true;
+
+  // notify server quiz started
+  await fetch(`/practice/quiz/<%= quiz.id %>/start`, { method: 'POST' });
+});
+
+document.getElementById('quizForm').addEventListener('submit', () => {
+  clearInterval(timerInterval);
+  timeTakenInput.value = timer;
+});
 </script>
 
 </body>

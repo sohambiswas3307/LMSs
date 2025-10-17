@@ -1,136 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | InnovateEd</title>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f8fafc;
-      margin: 0;
-      padding: 0;
-      color: #1e293b;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Learnthru</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /*
+        * Color Palette & Variables (Consistent with previous designs)
+        */
+        :root {
+            --bg-light: #f7f9fc;
+            --white: #ffffff;
+            --text-dark: #2a3344;
+            --text-medium: #6c757d;
+            --accent-blue: #4562d9; /* Login Button color */
+            --accent-pink: #f07b78; 
+            --error-red: #dc2626;
+            --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.08);
+            --border-radius-lg: 18px;
+            --border-radius-md: 10px;
+            --transition-speed: 0.3s;
+        }
 
-    header {
-      background-color: white;
-      padding: 20px 60px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-    header h1 {
-      font-size: 1.6rem;
-      font-weight: 600;
-      color: #0f172a;
-    }
+        /* ------------------- Header ------------------- */
 
-    header span {
-      color: #0ea5e9;
-      font-weight: 700;
-    }
+        header {
+            background-color: var(--white);
+            padding: 15px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
 
-    .container {
-      max-width: 420px;
-      margin: 80px auto;
-      background: #ffffff;
-      padding: 40px 50px;
-      border-radius: 16px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      text-align: center;
-    }
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0;
+        }
 
-    h2 {
-      font-size: 2rem;
-      color: #0f172a;
-      margin-bottom: 10px;
-    }
+        header span {
+            color: var(--text-medium);
+            font-weight: 500;
+        }
 
-    p.message {
-      color: #dc2626;
-      font-weight: 500;
-      margin-bottom: 15px;
-    }
+        header p {
+            margin: 0;
+            font-weight: 500;
+            color: var(--text-medium);
+        }
 
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      margin-top: 15px;
-    }
+        /* ------------------- Main Container (Form Card) ------------------- */
 
-    input {
-      padding: 12px 15px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: border-color 0.3s;
-    }
+        .container {
+            max-width: 420px;
+            width: 90%;
+            margin: 60px auto;
+            background: var(--white);
+            padding: 40px;
+            border-radius: var(--border-radius-lg); /* Large rounded corners */
+            box-shadow: var(--shadow-soft); /* Soft, prominent shadow */
+            text-align: center;
+            flex-grow: 1;
+        }
 
-    input:focus {
-      outline: none;
-      border-color: #0ea5e9;
-      box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
-    }
+        h2 {
+            font-size: 2.2rem;
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .sub-heading {
+            color: var(--text-medium);
+            margin-bottom: 30px; /* Slightly more space below sub-heading */
+            font-size: 1rem;
+        }
 
-    button {
-      padding: 12px 0;
-      background-color: #065f46;
-      color: white;
-      font-size: 1rem;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
+        p.message {
+            color: var(--error-red);
+            font-weight: 500;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: rgba(220, 38, 38, 0.05);
+            border-radius: var(--border-radius-md);
+        }
 
-    button:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
-    }
+        /* ------------------- Form Elements ------------------- */
 
-    .links {
-      margin-top: 25px;
-      font-size: 0.95rem;
-    }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px; /* Slightly more gap for cleaner look */
+            margin-top: 15px;
+        }
 
-    .links a {
-      color: #0ea5e9;
-      text-decoration: none;
-      font-weight: 500;
-    }
+        input {
+            width: 100%;
+            padding: 14px 18px; /* Increased padding */
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius-md);
+            font-size: 1rem;
+            color: var(--text-dark);
+            transition: all var(--transition-speed);
+            box-sizing: border-box;
+            font-weight: 500;
+        }
+        
+        /* Consistent placeholder style */
+        input::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
 
-    .links a:hover {
-      text-decoration: underline;
-    }
-  </style>
+        input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(69, 98, 217, 0.2);
+            background-color: #fafffe;
+        }
+
+        /* ------------------- Button ------------------- */
+        
+        button {
+            padding: 14px 0;
+            /* Use accent blue with a subtle gradient */
+            background: linear-gradient(90deg, var(--accent-blue), #5d75e6);
+            color: var(--white);
+            font-size: 1.05rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 30px; /* Pill shape */
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            box-shadow: 0 4px 10px rgba(69, 98, 217, 0.4);
+            margin-top: 5px;
+        }
+
+        button:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 8px 20px rgba(69, 98, 217, 0.6);
+            opacity: 1;
+        }
+
+        /* ------------------- Links ------------------- */
+
+        .links {
+            margin-top: 30px;
+            font-size: 0.95rem;
+            text-align: center;
+            color: var(--text-medium);
+        }
+
+        .links a {
+            color: var(--accent-pink); /* Using pink for the Register link */
+            text-decoration: none;
+            font-weight: 600;
+            transition: color var(--transition-speed);
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1>Welcome to <span>InnovateEd</span></h1>
-    <p>📘 Learn. Grow. Succeed.</p>
-  </header>
+    <header>
+        <h1><span style="color: #6c757d;">Learn</span>thru</h1>
+        <p>📘 Welcome Back</p>
+    </header>
 
-  <div class="container">
-    <h2>Login</h2>
-    <% if (message) { %>
-      <p class="message"><%= message %></p>
-    <% } %>
+    <div class="container">
+        <h2>Welcome Back</h2>
+        <p class="sub-heading">Please sign in to continue your progress.</p>
 
-    <form action="/login" method="post">
-      <input type="email" name="email" placeholder="Enter your email" required>
-      <input type="password" name="password" placeholder="Enter your password" required>
-      <button type="submit">Login</button>
-    </form>
+        <% if (message) { %>
+            <p class="message"><%= message %></p>
+        <% } %>
 
-    <div class="links">
-      <p>Don't have an account? <a href="/register">Register</a></p>
+        <form action="/login" method="post">
+            <input type="email" name="email" placeholder="Email Address" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Secure Login</button>
+        </form>
+
+        <div class="links">
+            <p>Don't have an account yet? <a href="/register">Register now</a></p>
+        </div>
     </div>
-  </div>
 
 </body>
 </html>

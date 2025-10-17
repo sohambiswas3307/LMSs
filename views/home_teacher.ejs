@@ -1,258 +1,565 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Teacher Dashboard | InnovateEd</title>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f8fafc;
-      margin: 0;
-      padding: 0;
-      color: #1e293b;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard | Learnthru</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /*
+        * Color Palette & Variables (Consistent with previous designs)
+        */
+        :root {
+            --bg-light: #f7f9fc;
+            --white: #ffffff;
+            --text-dark: #2a3344;
+            --text-medium: #6c757d;
+            --accent-blue: #4562d9; /* Primary Action/Link color */
+            --accent-pink: #f07b78; 
+            --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.08);
+            --border-radius-lg: 18px;
+            --border-radius-md: 12px;
+            --transition-speed: 0.3s;
+        }
 
-    header {
-      background-color: white;
-      padding: 20px 60px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+        }
 
-    header h1 {
-      font-size: 1.6rem;
-      font-weight: 600;
-      color: #0f172a;
-    }
+        /* ------------------- Header ------------------- */
+        header {
+            background-color: var(--white);
+            padding: 15px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid #e9eef5;
+            position: relative; /* Important for positioning the dropdown */
+            z-index: 100;
+        }
 
-    header span {
-      color: #0ea5e9;
-      font-weight: 700;
-    }
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0;
+        }
 
-    .container {
-      max-width: 1000px;
-      margin: 60px auto;
-      background: #ffffff;
-      padding: 40px 50px;
-      border-radius: 16px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    }
+        header span {
+            color: var(--text-medium);
+            font-weight: 500;
+        }
 
-    .container > h1 {
-      margin-top: 0;
-      margin-bottom: 30px;
-      text-align: center;
-      font-size: 1.6rem;
-    }
+        /* ------------------- User Menu (NEW/UPDATED) ------------------- */
+        .user-menu-container {
+            display: flex;
+            align-items: center;
+            position: relative; /* For dropdown positioning */
+        }
 
-    h2 {
-      font-size: 1.5rem;
-      color: #0f172a;
-      margin-bottom: 15px;
-    }
+        .user-name {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-right: 15px;
+            font-size: 1rem;
+        }
 
-    h4 {
-      font-size: 1rem;
-      color: #0f172a;
-      margin-top: 8px;
-    }
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent-blue);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform var(--transition-speed);
+        }
 
-    .dashboard-grid {
-      display: flex;
-      gap: 60px;
-      align-items: flex-start;
-      flex-wrap: wrap;
-    }
+        .profile-icon:hover {
+            transform: scale(1.05);
+        }
 
-    .form-panel {
-      flex: 1 1 300px;
-      max-width: 360px;
-    }
+        .dropdown-menu {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            background-color: var(--white);
+            border-radius: var(--border-radius-md);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            width: 220px; /* Slightly wider to accommodate email */
+            padding: 10px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: opacity var(--transition-speed), transform var(--transition-speed);
+        }
 
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
+        .dropdown-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
 
-    label {
-      font-weight: 500;
-      margin-bottom: 5px;
-      display: block;
-      font-size: 0.95rem;
-    }
+        .dropdown-info {
+            padding: 10px 20px;
+            border-bottom: 1px solid #e9eef5;
+            text-align: left;
+        }
 
-    input, textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      transition: border-color 0.3s;
-    }
+        .dropdown-info strong {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 2px;
+        }
 
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: #0ea5e9;
-      box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
-    }
+        .dropdown-info span {
+            font-size: 0.85rem;
+            color: var(--text-medium);
+            word-wrap: break-word;
+        }
+        
+        .dropdown-menu a {
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: var(--accent-pink); /* Logout link color */
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .dropdown-menu a:hover {
+            background-color: var(--bg-light);
+        }
 
-    button {
-      padding: 10px 0;
-      background-color: #065f46;
-      color: white;
-      font-size: 0.95rem;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
+        /* ------------------- Container and Dashboard Layout ------------------- */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: var(--white);
+            padding: 40px;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+        }
 
-    button:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
-    }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+            padding-bottom: 20px;
+        }
 
-    .courses-panel {
-      flex: 2 1 450px;
-      margin-left: 40px;
-    }
+        .dashboard-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
 
-    .course-card {
-      background-color: #f1f5f9;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-      transition: transform 0.2s, box-shadow 0.2s;
-      font-size: 0.9rem;
-    }
+        h2 {
+            font-size: 1.6rem;
+            color: var(--text-dark);
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
 
-    .course-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    }
+        .dashboard-grid {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        
+        .courses-panel {
+            flex: 1 1 100%;
+        }
 
-    .course-card a, .course-card button {
-      color: #0ea5e9;
-      font-weight: 600;
-      font-size: 1rem;
-      text-decoration: none;
-      margin-right: 8px;
-    }
+        /* ------------------- Toggle Button (Create Course) ------------------- */
+        .btn-create-course {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, var(--accent-blue), #5d75e6);
+            color: var(--white);
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            box-shadow: 0 4px 10px rgba(69, 98, 217, 0.4);
+        }
 
-    .course-actions {
-      margin-top: 10px;
-    }
+        .btn-create-course:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(69, 98, 217, 0.6);
+        }
+        
+        .btn-create-course svg {
+            margin-right: 8px;
+        }
 
-    ul {
-      list-style: none;
-      padding-left: 0;
-      margin-top: 6px;
-    }
+        /* ------------------- Modal/Panel for Form ------------------- */
+        .create-course-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
 
-    li {
-      padding: 3px 0;
-      color: #334155;
-      font-size: 0.85rem;
-    }
+        .create-course-panel.active {
+            display: flex;
+        }
 
-    p {
-      color: #475569;
-      font-size: 0.9rem;
-    }
+        .form-panel {
+            background-color: var(--white);
+            padding: 30px 40px;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-soft);
+            max-width: 450px;
+            width: 90%;
+            position: relative;
+            transform: scale(0.95);
+            opacity: 0;
+            transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+        }
+        
+        .create-course-panel.active .form-panel {
+            transform: scale(1);
+            opacity: 1;
+        }
 
-    .logout {
-      display: inline-block;
-      margin-top: 25px;
-      color: #0ea5e9;
-      font-weight: 500;
-      text-decoration: none;
-      font-size: 0.95rem;
-    }
+        .form-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-medium);
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
 
-    .logout:hover {
-      text-decoration: underline;
-    }
+        .form-close-btn:hover {
+            color: var(--accent-pink);
+        }
 
-    @media (max-width: 900px) {
-      .dashboard-grid {
-        flex-direction: column;
-      }
-      .form-panel, .courses-panel {
-        max-width: 100%;
-        margin-left: 0;
-      }
-    }
-  </style>
+        /* ------------------- Form Elements ------------------- */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 2px;
+            display: block;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius-md);
+            font-size: 0.95rem;
+            transition: all var(--transition-speed);
+            box-sizing: border-box;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(69, 98, 217, 0.2);
+            background-color: #fafffe;
+        }
+
+        button[type="submit"] {
+            padding: 12px 0;
+            background: linear-gradient(90deg, var(--accent-blue), #5d75e6);
+            color: var(--white);
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            box-shadow: 0 4px 10px rgba(69, 98, 217, 0.4);
+            margin-top: 10px;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 8px 20px rgba(69, 98, 217, 0.6);
+            opacity: 1;
+        }
+        
+        /* ------------------- Course Cards ------------------- */
+        .course-card {
+            background-color: var(--white);
+            border: 1px solid #e9eef5;
+            padding: 20px;
+            border-radius: var(--border-radius-md);
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .course-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        
+        .course-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background-color: var(--accent-blue);
+            border-top-left-radius: var(--border-radius-md);
+            border-bottom-left-radius: var(--border-radius-md);
+        }
+
+        .course-card strong {
+            font-size: 1.1rem;
+            color: var(--accent-blue);
+            font-weight: 700;
+        }
+        
+        p {
+            color: var(--text-medium);
+            font-size: 0.95rem;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+
+        .course-actions {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(0, 0, 0, 0.1);
+        }
+
+        .course-actions a {
+            color: var(--accent-blue);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            margin-right: 15px;
+            transition: color var(--transition-speed);
+        }
+        
+        .course-actions a:hover {
+            text-decoration: underline;
+            color: #5d75e6;
+        }
+
+        h4 {
+            font-size: 1rem;
+            color: var(--text-dark);
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 0;
+            border-left: 2px solid #e9eef5;
+            padding-left: 10px;
+        }
+
+        li {
+            padding: 3px 0;
+            color: var(--text-medium);
+            font-size: 0.9rem;
+        }
+
+        /* Logout Link (Removed from the bottom of the page in favor of the dropdown) */
+        .logout {
+            display: none; /* Hide the old bottom logout link */
+        }
+
+        /* ------------------- Media Queries ------------------- */
+        @media (max-width: 900px) {
+            .container {
+                margin: 40px 20px;
+                padding: 30px;
+            }
+            header {
+                padding: 15px 20px;
+            }
+            .dashboard-grid {
+                gap: 30px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1>Welcome to <span>InnovateEd</span></h1>
-    <p>📘 Learn. Grow. Succeed.</p>
-  </header>
-
-  <div class="container">
-    <h1>Welcome, <%= user.full_name %> (Teacher)</h1>
-
-    <div class="dashboard-grid">
-      <!-- Left: Create Course Form -->
-      <div class="form-panel">
-        <h2>Create a New Course</h2>
-        <form action="/create-course" method="post">
-          <label for="title">Title</label>
-          <input type="text" name="title" id="title" required>
-
-          <label for="description">Description</label>
-          <textarea name="description" id="description" rows="4" required></textarea>
-
-          <label for="duration">Duration</label>
-          <input type="text" name="duration" id="duration" required>
-
-          <button type="submit">Create Course</button>
-        </form>
-      </div>
-
-      <!-- Right: Courses List -->
-      <div class="courses-panel">
-        <h2>Your Courses and Enrolled Students</h2>
-        <% if(coursesWithStudents.length > 0){ %>
-          <% coursesWithStudents.forEach(course => { %>
-            <div class="course-card">
-              <strong><%= course.title %></strong> - <%= course.duration %>
-              <p><%= course.description %></p>
-
-              <div class="course-actions">
-                <a href="/course/<%= course.id %>">View Course</a>
-                <a href="/course/<%= course.id %>/assignments">Assignments</a>
-                <a href="/course/<%= course.id %>/quiz/create">Create Quiz</a>
-              </div>
-
-              <h4>Enrolled Students:</h4>
-              <% if(course.students.length > 0){ %>
-                <ul>
-                  <% course.students.forEach(student => { %>
-                    <li><%= student.full_name %> - <%= student.email %></li>
-                  <% }) %>
-                </ul>
-              <% } else { %>
-                <p>No students enrolled yet.</p>
-              <% } %>
+    <header>
+        <h1><span style="color: #6c757d;">Learn</span>thru</h1>
+        
+        <div class="user-menu-container">
+            <p class="user-name"><%= user.username %></p> 
+            
+            <div class="profile-icon" id="profileIcon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </div>
-          <% }) %>
-        <% } else { %>
-          <p>You have not created any courses yet.</p>
-        <% } %>
-      </div>
+            
+            <div class="dropdown-menu" id="profileDropdown">
+                <div class="dropdown-info">
+                    <strong><%= user.full_name %></strong> <span><%= user.email %></span>
+                </div>
+                <a href="/logout">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>Welcome, <%= user.full_name %></h1>
+            
+            <button class="btn-create-course" id="openCreateForm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                Create New Course
+            </button>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="courses-panel">
+                <h2>Your Active Courses</h2>
+                <% if(coursesWithStudents.length > 0){ %>
+                    <% coursesWithStudents.forEach(course => { %>
+                        <div class="course-card">
+                            <strong><%= course.title %></strong> (Duration: <%= course.duration %>)
+                            <p><%= course.description %></p>
+
+                            <div class="course-actions">
+                                <a href="/course/<%= course.id %>">View/Edit</a>
+                                <a href="/course/<%= course.id %>/assignments">Assignments</a>
+                                <a href="/course/<%= course.id %>/quiz/create">Create Quiz</a>
+                            </div>
+
+                            <h4>Enrolled Students (<%= course.students.length %>):</h4>
+                            <% if(course.students.length > 0){ %>
+                                <ul>
+                                    <% course.students.slice(0, 3).forEach(student => { %>
+                                        <li><%= student.full_name %> (<%= student.email %>)</li>
+                                    <% }) %>
+                                    <% if(course.students.length > 3) { %>
+                                        <li>...and <%= course.students.length - 3 %> more.</li>
+                                    <% } %>
+                                </ul>
+                            <% } else { %>
+                                <p style="color: var(--accent-pink);">No students enrolled yet. Promote your course!</p>
+                            <% } %>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p style="padding: 20px; border: 1px dashed var(--accent-pink); border-radius: var(--border-radius-md);">
+                        You have not created any courses yet. Click "Create New Course" above to get started!
+                    </p>
+                <% } %>
+            </div>
+        </div>
+
+        <a href="/logout" class="logout">Logout</a> 
     </div>
 
-    <a href="/logout" class="logout">Logout</a>
-  </div>
+    <div class="create-course-panel" id="createCoursePanel">
+        <div class="form-panel">
+            <button class="form-close-btn" id="closeCreateForm">&times;</button>
+            <h2>Create a New Course</h2>
+            <form action="/create-course" method="post">
+                <div class="form-group">
+                    <label for="title">Course Title</label>
+                    <input type="text" name="title" id="title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea name="description" id="description" rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="duration">Duration (e.g., 8 weeks)</label>
+                    <input type="text" name="duration" id="duration" required>
+                </div>
+
+                <button type="submit">Create Course</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- Modal Toggle Logic ---
+        const openBtn = document.getElementById('openCreateForm');
+        const closeBtn = document.getElementById('closeCreateForm');
+        const panel = document.getElementById('createCoursePanel');
+
+        const toggleModal = (action) => {
+            if (action === 'open') {
+                panel.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } else {
+                panel.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        };
+
+        openBtn.addEventListener('click', () => toggleModal('open'));
+        closeBtn.addEventListener('click', () => toggleModal('close'));
+        panel.addEventListener('click', (e) => {
+            if (e.target === panel) toggleModal('close');
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && panel.classList.contains('active')) toggleModal('close');
+        });
+        
+        // --- Profile Dropdown Logic (NEW) ---
+        const profileIcon = document.getElementById('profileIcon');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        // Toggle the dropdown visibility
+        profileIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('active');
+        });
+
+        // Close the dropdown when clicking anywhere else on the page
+        window.addEventListener('click', (e) => {
+            // Check if the dropdown is active and the click wasn't inside the icon or the dropdown itself
+            if (profileDropdown.classList.contains('active') && !profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
+                profileDropdown.classList.remove('active');
+            }
+        });
+    </script>
 
 </body>
 </html>

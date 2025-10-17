@@ -1,3 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice | InnovateEd</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-light: #f8fafc;
+    --white: #ffffff;
+    --text-dark: #1e293b;
+    --text-medium: #475569;
+    --accent-blue: #0ea5e9;
+    --accent-light-blue: #e0f2fe;
+    --accent-pink: #fca5a5;
+    --shadow-soft: 0 4px 15px rgba(0,0,0,0.05);
+    --border-radius-lg: 16px;
+    --border-radius-md: 12px;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-light);
+    margin: 0;
+    padding: 0;
+    color: var(--text-dark);
+  }
+
+  header {
+    background-color: var(--white);
+    padding: 20px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  header h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  header h1 span {
+    color: var(--accent-blue);
+    font-weight: 700;
+  }
+
+  .leaderboard-btn {
+    background-color: var(--accent-blue);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .leaderboard-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: var(--white);
+    padding: 40px 50px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-soft);
+  }
+
+  h1 {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--text-dark);
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  li {
+    background-color: var(--accent-light-blue);
+    padding: 20px 25px;
+    border-radius: var(--border-radius-md);
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  }
+
+  li a {
+    color: var(--accent-blue);
+    font-weight: 600;
+    font-size: 1.2rem;
+    text-decoration: none;
+  }
+  li a:hover {
+    text-decoration: underline;
+  }
+
+  p {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--text-medium);
+  }
+</style>
+</head>
+<body>
+
 <header>
   <h1>Welcome to <span>InnovateEd</span></h1>
   <button class="leaderboard-btn" onclick="location.href='/practice/leaderboard'">Leaderboard</button>
@@ -5,15 +123,19 @@
 
 <div class="container">
   <h1>Choose a Course to Practice</h1>
+
   <% if(courses.length > 0){ %>
-  <ul>
-    <% courses.forEach(course => { %>
-      <li>
-        <a href="/practice/<%= course.id %>"><%= course.title %></a>
-      </li>
-    <% }) %>
-  </ul>
+    <ul>
+      <% courses.forEach(course => { %>
+        <li>
+          <a href="/practice/<%= course.id %>"><%= course.title %></a>
+        </li>
+      <% }) %>
+    </ul>
   <% } else { %>
-  <p>No courses available.</p>
+    <p>No courses available.</p>
   <% } %>
 </div>
+
+</body>
+</html>

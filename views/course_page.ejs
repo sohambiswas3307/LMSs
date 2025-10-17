@@ -1,86 +1,563 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= course.title %> | InnovateEd</title>
-  <style>
-    body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; margin:0; padding:0; color:#1e293b; }
-    header { background-color: white; padding: 20px 60px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
-    header h1 { font-size:1.6rem; font-weight:600; color:#0f172a; }
-    header span { color:#0ea5e9; font-weight:700; }
-    .container { max-width:800px; margin:80px auto; background:#fff; padding:40px 50px; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.05); }
-    h1 { font-size:1.8rem; color:#0f172a; margin-bottom:10px; text-align:center; }
-    p { font-size:1rem; color:#475569; margin-bottom:25px; text-align:center; }
-    a.button-link { display:inline-block; margin:10px 10px 0 10px; padding:12px 25px; background-color:#065f46; color:white; font-size:1rem; font-weight:500; text-decoration:none; border-radius:25px; transition:0.3s; }
-    a.button-link:hover { opacity:0.9; transform:translateY(-2px); }
-    .back-link { display:inline-block; margin-top:20px; color:#0ea5e9; font-weight:500; text-decoration:none; font-size:0.95rem; }
-    .back-link:hover { text-decoration:underline; }
-    .materials { margin-top:30px; }
-    .materials ul { list-style:none; padding-left:0; }
-    .materials li { padding:8px 0; font-size:0.95rem; }
-    form.upload-form { margin-top:30px; border:1px solid #cbd5e1; padding:20px; border-radius:12px; background-color:#f1f5f9; }
-    form.upload-form input[type="text"], form.upload-form input[type="file"] { width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #cbd5e1; }
-    form.upload-form button { padding:10px 0; background-color:#065f46; color:white; font-size:1rem; border:none; border-radius:25px; cursor:pointer; transition:0.3s; }
-    form.upload-form button:hover { opacity:0.9; transform:translateY(-2px); }
-    .role-teacher { margin-top:40px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= course?.title || 'Course' %> | InnovateEd</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Aesthetic Variables (Modern, Clean, Light Theme) --- */
+        :root {
+            --bg-light: #f7f9fc;
+            --white: #ffffff;
+            --text-dark: #2a3344;
+            --text-medium: #6c757d;
+            --accent-vibrant-blue: #4562d9;
+            --accent-coral-pink: #f07b78;
+            --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.08);
+            --border-radius-lg: 18px;
+            --border-radius-md: 12px;
+            --transition-speed: 0.3s;
+            --border-color: #e9eef5;
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--bg-light); 
+            margin:0; 
+            padding:0; 
+            color:var(--text-dark); 
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        /* --- Header --- */
+        header { 
+            background: var(--white); 
+            padding: 15px 40px; 
+            display:flex; 
+            justify-content:space-between; 
+            align-items:center; 
+            box-shadow:0 2px 4px rgba(0, 0, 0, 0.05); 
+            border-bottom: 1px solid var(--border-color);
+        }
+        header h1 { 
+            font-size:1.6rem; 
+            font-weight:700; 
+            color:var(--text-dark); 
+            margin: 0;
+        }
+        header span { 
+            color:var(--accent-vibrant-blue); 
+            font-weight:700; 
+        }
+
+        /* Header buttons */
+        .header-buttons { display:flex; align-items:center; gap:12px; }
+
+        .home-button{
+            padding: 8px 18px;
+            background-color: var(--accent-vibrant-blue);
+            color: var(--white);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            border-radius: 25px;
+            transition: all var(--transition-speed);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 5px rgba(69, 98, 217, 0.3);
+        }
+        .home-button:hover{
+            background-color: #5d75e6; 
+            transform: translateY(-1px);
+        }
+
+        /* --- Dashboard Container --- */
+        .dashboard-layout{
+            display: flex;
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 40px;
+            gap: 30px;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar-panel{
+            flex: 0 0 240px; 
+            background: var(--white);
+            padding: 30px 20px;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-soft);
+            align-self: flex-start; 
+        }
+
+        /* --- Main Content --- */
+        .main-content-panel{
+            flex: 1; 
+            background: var(--white);
+            padding: 40px 50px;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* --- Navigation Buttons --- */
+        .sidebar-panel h2{
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+        .nav-buttons-container{
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        a.dashboard-button{ 
+            display: flex;
+            align-items: center;
+            padding:12px 15px; 
+            background-color: #f0f3fa; 
+            color:var(--text-dark); 
+            font-size:0.95rem; 
+            font-weight:500; 
+            text-decoration:none; 
+            border-radius:var(--border-radius-md); 
+            transition: all var(--transition-speed); 
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+        a.dashboard-button:hover{ 
+            background-color: #e0e5ff; 
+            color: var(--accent-vibrant-blue);
+            transform: translateX(2px); 
+        }
+        a.dashboard-button.active{
+             background-color: var(--accent-vibrant-blue);
+             color: var(--white);
+             font-weight: 600;
+             border-color: var(--accent-vibrant-blue);
+             box-shadow: 0 4px 8px rgba(69, 98, 217, 0.3);
+        }
+
+        /* --- Curriculum Styles --- */
+        .main-content-panel > h1{
+            font-size: 2.2rem;
+            color: var(--text-dark); 
+            margin-bottom: 20px; 
+            font-weight: 700;
+        }
+        h2{ 
+            font-size:1.6rem; 
+            margin-top:30px;
+            margin-bottom:15px; 
+            color:var(--text-dark); 
+            border-bottom:2px solid var(--border-color); 
+            padding-bottom:10px; 
+            font-weight: 600; 
+        }
+        .chapter, .topic{ 
+            margin-bottom: 15px; 
+            border:1px solid var(--border-color); 
+            border-radius:var(--border-radius-md); 
+            background:var(--white); 
+            box-shadow: 0 1px 5px rgba(0,0,0,0.03);
+            overflow: hidden;
+        }
+
+        .curriculum h3, .curriculum h4{
+            padding: 15px 20px;
+            margin: 0;
+            border: none;
+            border-radius: 0;
+            background: #fcfdfe;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+            font-weight: 600;
+        }
+        .curriculum h4{ font-weight: 500; }
+        .curriculum h3:hover, .curriculum h4:hover{ background: #f0f3fa; }
+
+        .toggle-arrow{
+            font-size: 0.8rem;
+            color: var(--accent-vibrant-blue);
+            transition: transform 0.3s;
+        }
+        .chapter-content, .video-container{ 
+            padding: 0 20px 0 20px;
+            display: none; 
+        }
+
+        .video{ 
+            padding:10px 0;
+            border-left: 4px solid var(--accent-vibrant-blue);
+            border-radius: 0;
+            margin-bottom: 8px;
+            background: #f8faff; 
+            padding-left: 10px;
+        }
+        .video a{ 
+            color:var(--accent-vibrant-blue); 
+            text-decoration:none; 
+            font-weight:500; 
+        }
+
+        /* Teacher upload form */
+        .role-teacher{
+            margin-top:40px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+        }
+        form.upload-form{ 
+            margin-top:20px; 
+            border:1px solid #d4e0ff; 
+            padding:25px; 
+            border-radius:var(--border-radius-md); 
+            background:#f0f3fa; 
+            box-shadow: 0 4px 10px rgba(69, 98, 217, 0.08);
+        }
+        form.upload-form h2{
+            font-size: 1.4rem;
+            color: var(--accent-vibrant-blue);
+            font-weight: 600;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--accent-vibrant-blue);
+        }
+        form.upload-form input[type="text"], form.upload-form input[type="file"]{ 
+            width:100%; 
+            padding:12px; 
+            margin-bottom:15px; 
+            border-radius:8px; 
+            border:1px solid #c8d3e4; 
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        form.upload-form input:focus{
+            outline: none;
+            border-color: var(--accent-vibrant-blue);
+            box-shadow: 0 0 0 3px rgba(69, 98, 217, 0.2);
+        }
+        form.upload-form button{
+            width: 100%;
+            padding:12px 0; 
+            background-color: var(--accent-vibrant-blue); 
+            color:white; 
+            font-size:1rem; 
+            border:none; 
+            border-radius:var(--border-radius-md); 
+            cursor:pointer; 
+            transition:0.3s; 
+        }
+        form.upload-form button:hover{
+            background-color: #5d75e6;
+            transform:translateY(-1px); 
+        }
+
+        /* Modal Overrides */
+        #videoModal{ display:none; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; position:fixed; top:0; left:0; width:100%; height:100%; z-index:1000;}
+        #videoModalContent{position:relative; max-width:900px; width:90%; aspect-ratio:16/9;}
+        #courseVideo{ width:100%; height:100%; border-radius:var(--border-radius-md);}
+        #closeModal{ position:absolute; top:-30px; right:-30px; font-size:3rem; color:white; cursor:pointer; transition: color 0.2s;}
+        #closeModal:hover{ color: var(--accent-coral-pink); }
+
+        #materialModal{display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:1000;}
+        #materialModal iframe{border:none; border-radius:var(--border-radius-md);}
+        #closeMaterial{position:absolute; top:-30px; right:-30px; font-size:3rem; color:white; cursor:pointer; transition: color 0.2s;}
+        #closeMaterial:hover{color: var(--accent-coral-pink);}
+        
+        @media (max-width:900px){
+            .dashboard-layout{ flex-direction: column; padding: 0 20px; margin: 20px auto; gap: 20px;}
+            .sidebar-panel{ flex: 1 1 auto; width:auto; padding:20px;}
+            .nav-buttons-container{ flex-direction: row; flex-wrap: wrap; gap: 8px;}
+            a.dashboard-button{ flex:1 1 45%;}
+            .main-content-panel{ padding:20px;}
+            header{ padding:15px 20px;}
+        }
+    </style>
+    <script>
+        // Toggle sections
+        function toggleSection(id){
+            const el = document.getElementById(id);
+            const header = document.querySelector(`[onclick="toggleSection('${id}')"]`);
+            const isHidden = el.style.display === 'none' || el.style.display === '';
+            el.style.display = isHidden ? 'block' : 'none';
+            const arrow = header ? header.querySelector('.toggle-arrow') : null;
+            if(arrow){ arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)'; }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Teacher Upload Toggle
+            const toggleBtn = document.getElementById('toggleUploadVideo');
+            const uploadForm = document.getElementById('uploadVideoForm');
+            if(toggleBtn){
+                toggleBtn.addEventListener('click', ()=>{ uploadForm.style.display = (uploadForm.style.display==='block' ? 'none':'block'); });
+            }
+
+            // Video Modal Logic
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('courseVideo');
+            const closeModal = document.getElementById('closeModal');
+
+            document.querySelectorAll('.play-video').forEach(link=>{
+                link.addEventListener('click', function(e){
+                    e.preventDefault();
+                    video.src = this.dataset.src;
+                    video.load();
+                    modal.style.display='flex';
+                    document.body.style.overflow='hidden';
+                    setTimeout(()=>{ video.play().catch(err=>console.log(err)); },50);
+                });
+            });
+
+            closeModal.addEventListener('click', ()=>{ video.pause(); video.currentTime=0; modal.style.display='none'; document.body.style.overflow='auto'; });
+            modal.addEventListener('click',(e)=>{ if(e.target===modal){ video.pause(); video.currentTime=0; modal.style.display='none'; document.body.style.overflow='auto'; } });
+
+            document.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && modal.style.display==='flex'){ video.pause(); video.currentTime=0; modal.style.display='none'; document.body.style.overflow='auto'; } });
+
+            // Material Modal Logic
+            const materialModal = document.getElementById('materialModal');
+            const materialFrame = document.getElementById('materialFrame');
+            const closeMaterial = document.getElementById('closeMaterial');
+            window.showMaterial = function(src){ materialFrame.src = src; materialModal.style.display='flex'; document.body.style.overflow='hidden'; }
+            window.showMaterialGoogle = function(src){
+                const url = 'https://docs.google.com/gview?url='+encodeURIComponent(window.location.origin+src)+'&embedded=true';
+                materialFrame.src=url;
+                materialModal.style.display='flex';
+                document.body.style.overflow='hidden';
+            }
+            closeMaterial.addEventListener('click', ()=>{ materialModal.style.display='none'; materialFrame.src=''; document.body.style.overflow='auto'; });
+            materialModal.addEventListener('click',(e)=>{ if(e.target===materialModal){ materialModal.style.display='none'; materialFrame.src=''; document.body.style.overflow='auto'; } });
+        });
+    </script>
 </head>
 <body>
 
-  <header>
-    <h1>Welcome to <span>InnovateEd</span></h1>
-    <p>📘 Learn. Grow. Succeed.</p>
-  </header>
-  
-  <a href="/course/<%= course.id %>/forum">
-    <button>Go to Course Discussion Forum</button>
-  </a>
+<header>
+    <h1>Innovate<span>Ed</span></h1>
+    <div class="header-buttons">
+      <a class="home-button" href="/home">🏠 Home</a>
 
-  <a href="/ask-ai" class="btn btn-primary">Ask AI 🤖</a>
+      <!-- Robot button with chat bubble -->
+      <div id="aiRobotContainer" style="display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer;">
+          <div id="aiRobot" style="width:40px; height:40px; background:#4562d9; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:22px; color:white; transition:0.3s;">
+              🤖
+          </div>
+          <div style="font-size:0.75rem; background:#e7ecff; padding:2px 6px; border-radius:8px; color:#4562d9;">
+              Ask AI
+          </div>
+      </div>
+    </div>
+</header>
 
-
-
-
-
-
-
-  <div class="container">
-    <h1><%= course.title %></h1>
-    <p>Hi <%= user.full_name %> (<%= user.role %>)</p>
-
-    <a class="button-link" href="/course/<%= course.id %>/assignments?role=<%= role %>&userId=<%= user.id %>">
-      Go to Assignments
-    </a>
-
-    <div class="materials">
-      <h2>Course Materials</h2>
-      <% if (materials && materials.length > 0) { %>
-        <ul>
-          <% materials.forEach(mat => { %>
-            <li>
-              <a href="/uploads/<%= mat.file_path %>" target="_blank"><%= mat.file_name %></a>
-            </li>
-          <% }) %>
-        </ul>
-      <% } else { %>
-        <p>No materials uploaded yet.</p>
-      <% } %>
+<div class="dashboard-layout">
+    <div class="sidebar-panel">
+        <h2>Course Tools</h2>
+        <div class="nav-buttons-container">
+            <a class="dashboard-button active" href="/course/<%= course.id %>">Curriculum</a>
+            <a class="dashboard-button" href="/course/<%= course.id %>/assignments?role=<%= user.role %>&userId=<%= user.id %>">Assignments</a>
+            <a class="dashboard-button" href="/course/<%= course.id %>/materials">Materials</a>
+            <a class="dashboard-button" href="/course/<%= course.id %>/forum">Discussion Forum</a>
+            <!-- Practice Tab -->
+            <% if(user.role==='Teacher'){ %>
+                <a class="dashboard-button" href="/course/<%= course.id %>/quiz/create">Practice</a>
+            <% } else { %>
+                <a class="dashboard-button" href="/practice/<%= course.id %>">Practice</a>
+            <% } %>
+        </div>
     </div>
 
-    <% if (user.role === 'Teacher') { %>
-      <div class="role-teacher">
-        <h2>Upload New Material</h2>
-        <form class="upload-form" action="/course/<%= course.id %>/materials/upload" method="POST" enctype="multipart/form-data">
-          <input type="text" name="material_title" placeholder="Material Title" required>
-          <input type="file" name="material_file" accept=".pdf,.ppt,.pptx,.doc,.docx" required>
-          <button type="submit">Upload</button>
-        </form>
-      </div>
-    <% } %>
+    <div class="main-content-panel">
+        <h1><%= course?.title %></h1>
 
-    <a class="back-link" href="/home">Back to Home</a>
-  </div>
+        <div class="section curriculum">
+            <h2>Course Curriculum</h2>
+            <% if(chapters && chapters.length){ %>
+                <% chapters.forEach((chapter,cIndex)=>{ %>
+                    <div class="chapter">
+                        <h3 onclick="toggleSection('chapter-<%=cIndex%>')">
+                            Chapter: <%=chapter.title%> <span class="toggle-arrow">▶</span>
+                        </h3>
+                        <div id="chapter-<%=cIndex%>" class="chapter-content">
+                            <% if(chapter.topics && chapter.topics.length){ %>
+                                <% chapter.topics.forEach((topic,tIndex)=>{ %>
+                                    <div class="topic">
+                                        <h4 onclick="toggleSection('topic-<%=cIndex%>-<%=tIndex%>')">
+                                            Topic: <%=topic.title%> <span class="toggle-arrow">▶</span>
+                                        </h4>
+                                        <div class="video-container" id="topic-<%=cIndex%>-<%=tIndex%>">
+                                            <% if(topic.videos && topic.videos.length){ %>
+                                                <% topic.videos.forEach(video=>{ %>
+                                                    <div class="video">
+                                                        <a href="#" class="play-video" data-src="/uploads/<%= video.file_path %>"><%= video.title %></a>
+                                                    </div>
+                                                <% }) %>
+                                            <% }else{ %>
+                                                <p style="color: var(--text-medium); padding-left:5px; margin-bottom:5px;">No videos uploaded yet.</p>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% }else{ %>
+                                <p style="padding:10px 20px;">No topics uploaded yet.</p>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }) %>
+            <% }else{ %>
+                <p>No chapters uploaded yet.</p>
+            <% } %>
+        </div>
+
+        <% if(user.role==='Teacher'){ %>
+            <div class="role-teacher">
+                <button id="toggleUploadVideo" class="dashboard-button" style="width:auto; margin-bottom:15px; background-color: var(--accent-vibrant-blue); color:white;">Upload New Video</button>
+                <div id="uploadVideoForm" style="display:none; margin-top:15px;">
+                    <h2>Upload New Chapter/Topic Video</h2>
+                    <form class="upload-form" action="/course/<%= course.id %>/upload" method="POST" enctype="multipart/form-data">
+                        <input type="text" name="chapterTitle" placeholder="Chapter Title" required>
+                        <input type="text" name="topicTitle" placeholder="Topic Title" required>
+                        <input type="file" name="videoFile" accept="video/*" required>
+                        <button type="submit">Upload Video</button>
+                    </form>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Video Modal -->
+<div id="videoModal">
+    <div id="videoModalContent">
+        <video id="courseVideo" controls></video>
+        <span id="closeModal">&times;</span>
+    </div>
+</div>
+
+<!-- Material Modal -->
+<div id="materialModal">
+    <iframe id="materialFrame" width="90%" height="90%"></iframe>
+    <span id="closeMaterial">&times;</span>
+</div>
+
+<!-- Ask AI Chat Panel -->
+<div id="aiChatbox" style="
+    display:none;
+    position:fixed;
+    right:20px;
+    top:80px;
+    width:320px;
+    max-height:500px;
+    background:#fff;
+    box-shadow:0 8px 24px rgba(0,0,0,0.2);
+    border-radius:18px;
+    display:flex;
+    flex-direction:column;
+    z-index:1000;
+    overflow:hidden;
+">
+    <div style="padding:10px 15px; background:#4562d9; color:white; display:flex; justify-content:space-between; align-items:center;">
+        💬 Ask AI Assistant
+        <button id="closeAI" style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✖</button>
+    </div>
+    <div id="aiMessages" style="flex:1; padding:10px; overflow-y:auto; background:#f7f9fc;"></div>
+    <div style="display:flex; border-top:1px solid #e9eef5;">
+        <input id="aiQuestion" type="text" placeholder="Type your question..." style="flex:1; padding:10px; border:none; outline:none;">
+        <button id="aiSend" style="padding:0 15px; background:#4562d9; color:white; border:none; cursor:pointer;">Send</button>
+    </div>
+</div>
+
+<script>
+const aiRobot = document.getElementById('aiRobotContainer');
+const aiChatbox = document.getElementById('aiChatbox');
+const aiClose = document.getElementById('closeAI');
+const aiSend = document.getElementById('aiSend');
+const aiInput = document.getElementById('aiQuestion');
+const aiMessages = document.getElementById('aiMessages');
+
+// Open chatbox when robot clicked
+aiRobot.addEventListener('click', () => {
+    aiChatbox.style.display = 'flex';
+    aiInput.focus();
+});
+
+// Close chatbox
+aiClose.addEventListener('click', () => {
+    aiChatbox.style.display = 'none';
+});
+
+// Append message to chat
+function appendAIMessage(text, who='ai') {
+    const div = document.createElement('div');
+    div.style.maxWidth = '80%';
+    div.style.margin = '5px 0';
+    div.style.padding = '8px 12px';
+    div.style.borderRadius = '10px';
+    div.style.wordWrap = 'break-word';
+    div.style.clear = 'both';
+    if(who==='user'){
+        div.style.marginLeft = 'auto';
+        div.style.background = '#4562d9';
+        div.style.color = '#fff';
+        div.style.textAlign = 'right';
+    } else {
+        div.style.marginRight = 'auto';
+        div.style.background = '#e7ecff';
+        div.style.color = '#2a3344';
+        div.style.textAlign = 'left';
+    }
+    div.innerHTML = text;
+    aiMessages.appendChild(div);
+    aiMessages.scrollTop = aiMessages.scrollHeight;
+}
+
+// Escape HTML
+function escapeHtml(unsafe){
+    return unsafe
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#039;')
+        .replaceAll('\n','<br>');
+}
+
+// Send question
+aiSend.addEventListener('click', async () => {
+    const question = aiInput.value.trim();
+    if(!question) return;
+    appendAIMessage(escapeHtml(question), 'user');
+    aiInput.value = '';
+
+    try {
+        const res = await fetch('/ask-ai', {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json' },
+            body: JSON.stringify({ question })
+        });
+        const data = await res.json();
+        appendAIMessage(escapeHtml(data.answer || 'Error retrieving response'), 'ai');
+    } catch(e){
+        appendAIMessage('Error contacting server', 'ai');
+        console.error(e);
+    }
+});
+
+// Enter key triggers send
+aiInput.addEventListener('keypress', e => {
+    if(e.key==='Enter' && !e.shiftKey){
+        e.preventDefault();
+        aiSend.click();
+    }
+});
+</script>
 
 </body>
 </html>

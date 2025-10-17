@@ -1,61 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Quiz Result</title>
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-    .container { max-width: 800px; margin: 50px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    h2 { text-align: center; color: #333; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    table, th, td { border: 1px solid #ccc; }
-    th, td { padding: 10px; text-align: left; }
-    th { background: #eee; }
-    .correct { color: green; font-weight: bold; }
-    .incorrect { color: red; font-weight: bold; }
-    .summary { margin-top: 20px; font-size: 16px; }
-  </style>
+<meta charset="UTF-8">
+<title>Quiz Result</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --bg-light: #f8fafc;
+    --white: #ffffff;
+    --text-dark: #1e293b;
+    --text-medium: #475569;
+    --accent-blue: #0ea5e9;
+    --accent-light-blue: #e0f2fe;
+    --accent-green: #22c55e;
+    --accent-red: #ef4444;
+    --shadow-soft: 0 4px 15px rgba(0,0,0,0.05);
+    --border-radius-lg: 16px;
+    --border-radius-md: 12px;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-light);
+    margin: 0;
+    padding: 0;
+    color: var(--text-dark);
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 40px auto;
+    background: var(--white);
+    padding: 40px 50px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-soft);
+    position: relative;
+  }
+
+  .back-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: var(--accent-blue);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s;
+  }
+  .back-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  h2 {
+    text-align: center;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+  }
+
+  .summary {
+    font-size: 16px;
+    margin-bottom: 30px;
+  }
+
+  .summary p {
+    margin: 5px 0;
+  }
+
+  .chart-container {
+    position: absolute;
+    top: 105px; /* lowered a bit */
+    right: 90px;
+    width: 150px;
+    height: 150px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  th, td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #e2e8f0;
+  }
+
+  th {
+    background-color: var(--accent-light-blue);
+  }
+
+  .correct {
+    color: var(--accent-green);
+    font-weight: bold;
+  }
+
+  .incorrect {
+    color: var(--accent-red);
+    font-weight: bold;
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2>Quiz Result</h2>
 
-    <div class="summary">
-      <p><strong>Student:</strong> <%= user.full_name %></p>
-      <p><strong>Score:</strong> <%= score %> / <%= total %></p>
-      <p><strong>Time Taken:</strong> <%= timeTaken %> seconds</p>
-      <p><strong>EXP Gained:</strong> <%= expGained %></p>
-    </div>
+<div class="container">
+  <a class="back-btn" href="/practice">← Back to Practice</a>
 
-    <h3>Question-wise Review</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Question</th>
-          <th>Your Answer</th>
-          <th>Correct Answer</th>
-          <th>Result</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% questions.forEach((q, idx) => { %>
-          <tr>
-            <td><%= idx + 1 %></td>
-            <td><%= q.question_text %></td>
-            <td><%= q.selected %></td>
-            <td><%= q.correct_option %></td>
-            <td class="<%= q.isCorrect ? 'correct' : 'incorrect' %>">
-              <%= q.isCorrect ? 'Correct' : 'Incorrect' %>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+  <h2>Quiz Result</h2>
 
-    <div style="text-align:center; margin-top:20px;">
-      <a href="/practice" style="text-decoration:none; color:white; background:#007bff; padding:10px 20px; border-radius:5px;">Back to Practice</a>
-    </div>
+  <div class="chart-container">
+    <canvas id="resultChart"></canvas>
   </div>
+
+  <div class="summary">
+    <p><strong>Student:</strong> <%= user.full_name %></p>
+    <p><strong>Score:</strong> <%= score %> / <%= total %></p>
+    <p><strong>Time Taken:</strong> <%= timeTaken %> seconds</p>
+    <p><strong>EXP Gained:</strong> <%= expGained %></p>
+  </div>
+
+  <h3>Question-wise Review</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Question</th>
+        <th>Your Answer</th>
+        <th>Correct Answer</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% questions.forEach((q, idx) => { %>
+        <tr>
+          <td><%= idx + 1 %></td>
+          <td><%= q.question_text %></td>
+          <td><%= q.selected || 'N/A' %></td>
+          <td><%= q.correct_option %></td>
+          <td class="<%= q.isCorrect ? 'correct' : 'incorrect' %>">
+            <%= q.isCorrect ? 'Correct' : 'Incorrect' %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  const correctCount = <%= questions.filter(q => q.isCorrect).length %>;
+  const incorrectCount = <%= questions.filter(q => !q.isCorrect).length %>;
+
+  const ctx = document.getElementById('resultChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Correct', 'Incorrect'],
+      datasets: [{
+        data: [correctCount, incorrectCount],
+        backgroundColor: ['#22c55e', '#ef4444'],
+        borderWidth: 2,
+        borderColor: '#fff',
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { display: false }
+      },
+      cutout: '70%'
+    }
+  });
+</script>
+
 </body>
 </html>

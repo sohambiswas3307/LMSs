@@ -1,167 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register | InnovateEd</title>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f8fafc;
-      margin: 0;
-      padding: 0;
-      color: #1e293b;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Learnthru</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /*
+        * Color Palette & Variables (Consistent with previous designs)
+        */
+        :root {
+            --bg-light: #f7f9fc;
+            --white: #ffffff;
+            --text-dark: #2a3344;
+            --text-medium: #6c757d;
+            --accent-blue: #4562d9; /* Active/Focus color */
+            --accent-pink: #f07b78; /* Register Button color */
+            --error-red: #dc2626;
+            --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.08); /* Stronger but soft shadow for focus */
+            --border-radius-lg: 18px;
+            --border-radius-md: 10px;
+            --transition-speed: 0.3s;
+        }
 
-    header {
-      background-color: white;
-      padding: 20px 60px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-    header h1 {
-      font-size: 1.6rem;
-      font-weight: 600;
-      color: #0f172a;
-    }
+        /* ------------------- Header ------------------- */
 
-    header span {
-      color: #0ea5e9;
-      font-weight: 700;
-    }
+        header {
+            background-color: var(--white);
+            padding: 15px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
 
-    .container {
-      max-width: 480px;
-      margin: 80px auto;
-      background: #ffffff;
-      padding: 40px 50px;
-      border-radius: 16px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      text-align: center;
-    }
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0;
+        }
 
-    h2 {
-      font-size: 2rem;
-      color: #0f172a;
-      margin-bottom: 10px;
-    }
+        header span {
+            color: var(--text-medium); /* Subdued color for part of the logo */
+            font-weight: 500;
+        }
 
-    p.message {
-      color: #dc2626;
-      font-weight: 500;
-      margin-bottom: 15px;
-    }
+        header p {
+            margin: 0;
+            font-weight: 500;
+            color: var(--text-medium);
+        }
 
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      margin-top: 15px;
-      text-align: left;
-    }
+        /* ------------------- Main Container (Form Card) ------------------- */
 
-    label {
-      font-weight: 500;
-      margin-bottom: 5px;
-      display: block;
-    }
+        .container {
+            max-width: 480px;
+            width: 90%;
+            margin: 60px auto;
+            background: var(--white);
+            padding: 40px;
+            border-radius: var(--border-radius-lg); /* Large rounded corners */
+            box-shadow: var(--shadow-soft); /* Soft, prominent shadow */
+            text-align: center;
+            flex-grow: 1;
+        }
 
-    input, select {
-      width: 100%;
-      padding: 12px 15px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: border-color 0.3s;
-    }
+        h2 {
+            font-size: 2.2rem;
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .sub-heading {
+            color: var(--text-medium);
+            margin-bottom: 25px;
+            font-size: 1rem;
+        }
 
-    input:focus, select:focus {
-      outline: none;
-      border-color: #0ea5e9;
-      box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
-    }
+        p.message {
+            color: var(--error-red);
+            font-weight: 500;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: rgba(220, 38, 38, 0.05); /* Light error background */
+            border-radius: var(--border-radius-md);
+        }
 
-    button {
-      padding: 12px 0;
-      background-color: #065f46;
-      color: white;
-      font-size: 1rem;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
+        /* ------------------- Form Elements ------------------- */
 
-    button:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
-    }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 15px;
+            text-align: left;
+        }
 
-    .links {
-      margin-top: 25px;
-      font-size: 0.95rem;
-      text-align: center;
-    }
+        label {
+            font-weight: 600;
+            margin-bottom: 2px;
+            display: block;
+            color: var(--text-dark);
+        }
 
-    .links a {
-      color: #0ea5e9;
-      text-decoration: none;
-      font-weight: 500;
-    }
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0; /* Lighter border */
+            border-radius: var(--border-radius-md); /* Medium rounded corners */
+            font-size: 1rem;
+            color: var(--text-dark);
+            transition: all var(--transition-speed);
+            box-sizing: border-box;
+        }
 
-    .links a:hover {
-      text-decoration: underline;
-    }
-  </style>
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(69, 98, 217, 0.2); /* Soft blue shadow */
+            background-color: #fafffe; /* Very slight white-blue background on focus */
+        }
+        
+        .form-group {
+            margin-bottom: 8px; /* Used if we group label and input */
+        }
+
+        /* ------------------- Button ------------------- */
+        
+        button {
+            padding: 14px 0;
+            /* Use accent pink with a subtle gradient for a dynamic look */
+            background: linear-gradient(90deg, var(--accent-pink), #ff918c);
+            color: var(--white);
+            font-size: 1.05rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 30px; /* Pill shape */
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            box-shadow: 0 4px 10px rgba(240, 123, 120, 0.4);
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 8px 20px rgba(240, 123, 120, 0.6);
+            opacity: 1;
+        }
+
+        /* ------------------- Links ------------------- */
+
+        .links {
+            margin-top: 30px;
+            font-size: 0.95rem;
+            text-align: center;
+            color: var(--text-medium);
+        }
+
+        .links a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color var(--transition-speed);
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1>Welcome to <span>InnovateEd</span></h1>
-    <p>📘 Learn. Grow. Succeed.</p>
-  </header>
+    <header>
+        <h1><span style="color: #6c757d;">Learn</span>thru</h1>
+        <p>📘 Start Your Journey</p>
+    </header>
 
-  <div class="container">
-    <h2>Register</h2>
-    <% if (message) { %>
-      <p class="message"><%= message %></p>
-    <% } %>
+    <div class="container">
+        <h2>Create Account</h2>
+        <p class="sub-heading">Unlock endless learning possibilities in minutes.</p>
 
-    <form action="/register" method="post">
-      <label for="username">Username</label>
-      <input type="text" name="username" id="username" required>
+        <% if (message) { %>
+            <p class="message"><%= message %></p>
+        <% } %>
 
-      <label for="full_name">Full Name</label>
-      <input type="text" name="full_name" id="full_name" required>
+        <form action="/register" method="post">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" name="username" id="username" required>
+            </div>
 
-      <label for="email">Email</label>
-      <input type="email" name="email" id="email" required>
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+                <input type="text" name="full_name" id="full_name" required>
+            </div>
 
-      <label for="phone">Phone</label>
-      <input type="text" name="phone" id="phone">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email" required>
+            </div>
 
-      <label for="age">Age</label>
-      <input type="number" name="age" id="age">
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="text" name="phone" id="phone">
+            </div>
 
-      <label for="role">Role</label>
-      <select name="role" id="role" required>
-        <option value="Student">Student</option>
-        <option value="Teacher">Teacher</option>
-      </select>
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="number" name="age" id="age">
+            </div>
 
-      <label for="password">Password</label>
-      <input type="password" name="password" id="password" required>
+            <div class="form-group">
+                <label for="role">Role</label>
+                <select name="role" id="role" required>
+                    <option value="Student">Student</option>
+                    <option value="Teacher">Teacher</option>
+                </select>
+            </div>
 
-      <button type="submit">Register</button>
-    </form>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" name="password" id="password" required>
+            </div>
 
-    <div class="links">
-      <p>Already have an account? <a href="/login">Login</a></p>
+            <button type="submit">Register Account</button>
+        </form>
+
+        <div class="links">
+            <p>Already a member? <a href="/login">Log in here</a></p>
+        </div>
     </div>
-  </div>
 
 </body>
 </html>
