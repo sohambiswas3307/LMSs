@@ -1355,4 +1355,6 @@ app.post('/course/:courseId/videos/upload', upload.single('video_file'), async (
 
 
 
-module.exports = app;
+app.listen(5000, () => {
+  console.log('Server running on port 5000');
+});
